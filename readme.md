@@ -4,9 +4,34 @@
 
 # Задача 1
 
+
 > Yandex Cloud
 
-TODO
+* Создать ВМ: Intel Ice Lake 2vCPU, fraction 20%, 2 Ram, 8Gb hdd, preemtible, public IP
+
+* Создать SSH-ключ:
+
+    ```shell
+    mkdir -p ~/tmp/k
+    cd ~/tmp/k
+
+    ssh-keygen -t ed25519
+    mv ./* ~/.ssh
+    ```
+
+* Подключиться к ВМ
+
+    ```shell
+    ssh -i ~/.ssh/key_name user_name@vm_public_ip
+    ```
+
+* Проверить версию docker
+
+    ```shell
+    docker --version
+    ```
+
+    > Docker version 20.10.21, build 20.10.21-0ubuntu1~22.04.3
 
 
 ## Задача 2
