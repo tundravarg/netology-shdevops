@@ -119,3 +119,33 @@ docker run --name custom-nginx-t2 -d -p 127.0.0.1:8080:81 custom-nginx-t2-tmpimg
 
 Можно было ещё через "Reconfigure Docker in Flight".
 Только зачем?
+
+
+## Задача 4
+
+
+> Подключитесь во второй контейнер и отобразите листинг и содержание файлов в /data контейнера.
+
+
+```shell
+docker container rm -f l4-centos l4-debian ; rm -f *.txt
+
+docker run --name l4-centos -v $(pwd):/data -it centos
+docker run --name l4-debian -v $(pwd):/data -it debian
+
+cat /etc/os-release | grep PRETTY_NAME
+
+echo "$(cat /etc/os-release | grep PRETTY_NAME) - $(date)" > host.txt
+```
+
+CentOS:
+
+![Результат](img/task-4-centos.jpg "Результат")
+
+Debian:
+
+![Результат](img/task-4-debian.jpg "Результат")
+
+Host:
+
+![Результат](img/task-4-host.jpg "Результат")
