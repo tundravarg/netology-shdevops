@@ -121,6 +121,7 @@ docker run --name custom-nginx-t2 -d -p 127.0.0.1:8080:81 custom-nginx-t2-tmpimg
 Только зачем?
 
 
+
 ## Задача 4
 
 
@@ -149,3 +150,70 @@ Debian:
 Host:
 
 ![Результат](img/task-4-host.jpg "Результат")
+
+
+
+## Задача 5
+
+
+## Подзадача 5-1
+
+
+> Какой из файлов был запущен и почему?
+
+![Результат](img/task-5-1.jpg "Результат")
+
+https://docs.docker.com/reference/cli/docker/compose/
+
+> The -f flag is optional. If you don’t provide this flag on the command line, Compose traverses the working directory and its parent directories looking for a compose.yaml or docker-compose.yaml file.
+
+Из этой фразы мы видим, что `compose.yaml` идёт первее, а значит приоритетнее.
+Из формальной логики: `X = A or B = true` - если `A = true`, и не важно, какое значение имеет `B`.
+Автор документации, наверное, следует этому.
+В общем, это и наблюдаем.
+
+https://docs.docker.com/compose/compose-application-model/#the-compose-file
+
+> The default path for a Compose file is compose.yaml (preferred) or compose.yml that is placed in the working directory. Compose also supports docker-compose.yaml and docker-compose.yml for backwards compatibility of earlier versions. If both files exist, Compose prefers the canonical compose.yaml.
+
+
+## Подзадача 5-2
+
+
+> Отредактируйте файл compose.yaml так, чтобы были запущенны оба файла.
+
+![Результат](img/task-5-2.jpg "Результат")
+
+
+## Подзадача 5-3
+
+
+
+> Выполните в консоли вашей хостовой ОС необходимые команды чтобы залить образ custom-nginx как custom-nginx:latest в запущенное вами, локальное registry.
+
+![Результат](img/task-5-3.jpg "Результат")
+
+
+## Подзадача 5-4,5,6
+
+
+> Откройте страницу "https://127.0.0.1:9000" и произведите начальную настройку portainer.
+
+![Результат](img/task-5-4-1.jpg "Результат")
+
+![Результат](img/task-5-4-2.jpg "Результат")
+
+> Откройте страницу "http://127.0.0.1:9000/#!/home", выберите ваше local окружение. Перейдите на вкладку "stacks" и в "web editor" задеплойте следующий компоуз:
+> В представлении <> Tree разверните поле "Config" и сделайте скриншот от поля "AppArmorProfile" до "Driver".
+
+![Результат](img/task-5-4-3.jpg "Результат")
+
+
+## Подзадача 5-7
+
+
+> Удалите любой из манифестов компоуза(например compose.yaml). Выполните команду "docker compose up -d". Прочитайте warning, объясните суть предупреждения и выполните предложенное действие. Погасите compose-проект ОДНОЙ командой.
+
+![Результат](img/task-5-7.jpg "Результат")
+
+Docker compose сообщил, что запущен контейнер, который более не описан в проекте. Чтобы удалить неописанные контейнеры, ноужно добавить флаг `--remove-orphans`.
