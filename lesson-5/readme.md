@@ -112,3 +112,12 @@ docker push cr.yandex/crpcmto6rb44nkqde1fn/py-service:0.0.0
 ![Результат](img/task-2-3.jpg "Результат")
 
 [Отчёт](files/py-service-vulnerabilities.csv)
+
+
+
+## Задача 3
+
+
+![Результат](img/task-3-1.jpg "Результат")
+
+![Результат](img/task-3-2.jpg "Результат")
