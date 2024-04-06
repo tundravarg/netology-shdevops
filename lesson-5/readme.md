@@ -121,3 +121,59 @@ docker push cr.yandex/crpcmto6rb44nkqde1fn/py-service:0.0.0
 ![Результат](img/task-3-1.jpg "Результат")
 
 ![Результат](img/task-3-2.jpg "Результат")
+
+
+
+## Задача 5
+
+
+### Установка Docker
+
+Устанавливаю на Debian 12.
+
+```shell
+apt update
+apt dist upgrade
+
+apt install gpg
+
+GPG_URL=https://download.docker.com/linux/debian/gpg
+APT_URL=https://download.docker.com/linux/debian
+ARCH=amd64
+RELEASE=bookworm
+GPG_DEST=/etc/apt/keyrings/docker.gpg
+LIST_DEST=/etc/apt/sources.list.d/docker.list
+curl -fsSL $GPG_URL | sudo gpg --dearmor -o $GPG_DEST
+echo "deb [arch=$ARCH signed-by=$GPG_DEST] $APT_URL $RELEASE stable" | sudo tee $LIST_DEST
+
+apt update
+
+# sudo apt install ./docker-desktop-4.28.0-amd64.deb
+# wget https://desktop.docker.com/linux/main/amd64/139021/docker-desktop-4.28.0-amd64.deb
+
+apt install docker-desktop
+
+apt autoremove && apt clean
+```
+
+Проверяем:
+
+```shell
+docker version
+```
+
+Далее, при необходимости.
+
+Добавляем текущего пользователя в группу `docker`.
+Не забываем перелогиниться, чотбы группа применилась.
+
+```shell
+sudo groupadd docker
+sudo usermod -aG docker $(whoami)
+```
+
+Запускаем Docker
+
+```shell
+sudo service docker start
+```
