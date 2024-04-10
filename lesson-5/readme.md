@@ -118,6 +118,19 @@ docker push cr.yandex/crpcmto6rb44nkqde1fn/py-service:0.0.0
 ## Задача 3
 
 
+Проверка содержимого БД:
+
+```shell
+docker exec -it ip-collector-service-db-1 mysql -uapp -p
+
+show databases;
+use virtd;
+show tables;
+SELECT * from requests LIMIT 10;
+
+show databases; use virtd; show tables; SELECT * from requests LIMIT 16;
+```
+
 ![Результат](img/task-3-1.jpg "Результат")
 
 ![Результат](img/task-3-2.jpg "Результат")
@@ -163,3 +176,31 @@ sudo usermod -aG docker $(whoami)
 ```shell
 docker run hello-world
 ```
+
+
+### Скрипт запуска проекта
+
+* [Скрипт (локальный)](shvirtd-example-python/run-ip-collector.sh)
+* [Скрипт (github)](https://github.com/tundravarg/netology-shvirtd-example-python/blob/lesson-5/run-ip-collector.sh)
+
+```shell
+#!/bin/bash
+
+REPOSITORY=https://github.com/tundravarg/netology-shvirtd-example-python.git
+BRANCH=lesson-5
+
+TARGET=/opt/ip-collector-service
+
+rm -rf $TARGET &&
+
+git clone $REPOSITORY $TARGET &&
+cd $TARGET &&
+git checkout $BRANCH &&
+
+docker compose create &&
+docker compose up &&
+
+echo "Done" || ( echo "Fail"; exit 1 )
+```
+
+![Результат](img/task-5-1.jpg "Результат")
