@@ -252,3 +252,18 @@ docker cp $CONTAINER_ID:$FILE $(basename $FILE)
 ```shell
 docker build -f Dockerfile.python -t tmp .
 ```
+
+
+## Задача 6.2 (**)
+
+> Предложите способ извлечь файл из контейнера, используя только команду docker build и любой Dockerfile.
+
+```shell
+docker rm -f tmp && \
+    docker build -f Dockerfile.python -t tmp . && \
+    TMP_ID=$(docker create --name tmp tmp) && \
+    docker cp $TMP_ID:/app/main.py ./out && \
+    docker rm $TMP_ID
+```
+
+![Результат](img/task-6-4.jpg "Результат")
