@@ -204,3 +204,51 @@ echo "Done" || ( echo "Fail"; exit 1 )
 ```
 
 ![Результат](img/task-5-1.jpg "Результат")
+
+
+
+## Задача 6
+
+
+> Скачайте docker образ ```hashicorp/terraform:latest``` и скопируйте бинарный файл ```/bin/terraform``` на свою локальную машину, используя dive и docker save.
+
+```shell
+IMAGE=hashicorp/terraform:latest
+docker pull $IMAGE
+DIVE="docker run -ti --rm  -v /var/run/docker.sock:/var/run/docker.sock wagoodman/dive"
+$DIVE $IMAGE
+```
+
+![Результат](img/task-6-1.jpg "Результат")
+
+```shell
+docker save --output terraform.tar hashicorp/terraform:latest
+tar xf terraform.tar
+cd blobs/sha256/
+ls -la | grep 63be41
+tar xf 63be41f6e91054e2eb3654a0d780e15fa9a05bc062b9ec1c8f3189f650a1393d
+cd bin
+ls
+./terraform --version
+```
+
+![Результат](img/task-6-2.jpg "Результат")
+
+
+## Задача 6.1
+
+> Добейтесь аналогичного результата, используя docker cp.
+
+```shell
+IMAGE=hashicorp/terraform:latest
+CONTAINER_ID=$(docker create $IMAGE)
+FILE=/bin/terraform
+docker cp $CONTAINER_ID:$FILE $(basename $FILE)
+```
+
+![Результат](img/task-6-3.jpg "Результат")
+
+
+```shell
+docker build -f Dockerfile.python -t tmp .
+```
