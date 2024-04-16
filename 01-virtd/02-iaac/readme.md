@@ -14,3 +14,9 @@ yc --version
 ```
 
 ![Результат](files/virtd-02-1.jpg "Результат")
+
+```shell
+export VAGRANT_DEFAULT_PROVIDER=virtualbox
+### TODO
+vagrant box add bento/ubuntu-20.04 --provider=virtualbox --force
+```
