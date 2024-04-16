@@ -143,3 +143,70 @@ resource "docker_image" "nginx" {
 https://docs.comcloud.xyz/providers/calxus/docker/latest/docs/resources/image
 
 > keep_locally (Boolean) If true, then the Docker image won't be deleted on destroy operation. If this is false, it will delete the image from the docker local storage on destroy operation.
+
+
+
+## Задание 2*
+
+
+> 1. Создайте в облаке ВМ. Сделайте это через web-консоль.
+> 2. Подключитесь к ВМ по ssh и установите стек docker.
+
+```shell
+sudo apt update
+sudo apt dist-upgrade
+
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+
+docker version
+sudo docker run hello-world
+
+sudo groupadd docker
+sudo usermod -aG docker $(whoami)
+
+sudo reboot now
+
+docker run hello-world
+```
+
+
+> 3. Найдите в документации docker provider способ настроить подключение terraform на вашей рабочей станции к remote docker context вашей ВМ через ssh.
+
+```hcl
+provider "docker" {
+  host     = "ssh://user@remote-host:22"
+  ssh_opts = ["-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null"]
+}
+```
+
+> 4. Используя terraform и remote docker context, скачайте и запустите на вашей ВМ контейнер mysql:8 на порту 127.0.0.1:3306, передайте ENV-переменные. Сгенерируйте разные пароли через random_password и передайте их в контейнер, используя интерполяцию из примера с nginx.(name  = "example_${random_password.random_string.result}" , двойные кавычки и фигурные скобки обязательны!)
+
+[main.tf](src-2/main.tf)
+
+```shell
+terraform init
+terraform validate
+terraform apply
+```
+
+![Результат](files/ter-01-2-4-1.jpg "Результат")
+
+![Результат](files/ter-01-2-4-2.jpg "Результат")
+
+```shell
+cat terraform.tfstate | grep MYSQL_PASSWORD
+```
+
+```shell
+docker ps
+docker exec -it test_db env | grep MYSQL_
+docker exec -it test_db mysql -udb-user -p
+```
+
+![Результат](files/ter-01-2-4-3.jpg "Результат")
+
+
+> 5. Зайдите на вашу ВМ , подключитесь к контейнеру и проверьте наличие секретных env-переменных с помощью команды env.
+
+![Результат](files/ter-01-2-5-1.jpg "Результат")
