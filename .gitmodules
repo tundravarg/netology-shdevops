@@ -1,0 +1,3 @@
+[submodule "lesson-5/shvirtd-example-python"]
+	path = 01-virtd/04-docker-in-practice/shvirtd-example-python
+	url = https://github.com/tundravarg/netology-shvirtd-example-python.git
