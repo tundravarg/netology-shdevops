@@ -96,3 +96,140 @@ terraform destroy
 если не требуется полная вычислительная можность ВМ.
 Например, если эот какой-то тестовый стенд, не требующий высокой вычислительной мощности
 или, как в этих занятиях, учебная виртуалка, чтобы "поиграться" с ней.
+
+
+
+## Задание 2
+
+
+> 1. Замените все хардкод-значения для ресурсов yandex_compute_image и yandex_compute_instance на отдельные переменные. К названиям переменных ВМ добавьте в начало префикс vm_web_ . Пример: vm_web_name.
+> 2. Объявите нужные переменные в файле variables.tf, обязательно указывайте тип переменной. Заполните их default прежними значениями из main.tf.
+> 3. Проверьте terraform plan. Изменений быть не должно.
+
+```shell
+terraform plan > plan.orig
+# changes...
+terraform plan > plan.new
+# diff
+diff -u plan.orig plan.new
+```
+
+![Result](files/ter-02-2.jpg)
+
+
+```diff
+diff --git a/02-ter/02/src/main.tf b/02-ter/02/src/main.tf
+index 598a404..5d841ce 100644
+--- a/02-ter/02/src/main.tf
++++ b/02-ter/02/src/main.tf
+@@ -10,15 +10,16 @@ resource "yandex_vpc_subnet" "develop" {
+ 
+ 
+ data "yandex_compute_image" "ubuntu" {
+-  family = "ubuntu-2004-lts"
++  family = "${var.vm_web_family}"
+ }
++
+ resource "yandex_compute_instance" "platform" {
+-  name        = "netology-develop-platform-web"
+-  platform_id = "standard-v3"
++  name        = "${var.vm_web_name}"
++  platform_id = "${var.vm_web_platform_id}"
+   resources {
+-    cores         = 2
+-    memory        = 1
+-    core_fraction = 20
++    cores         = var.vm_web_cores
++    memory        = var.vm_web_memory
++    core_fraction = var.vm_web_core_fraction
+   }
+   boot_disk {
+     initialize_params {
+@@ -26,16 +27,16 @@ resource "yandex_compute_instance" "platform" {
+     }
+   }
+   scheduling_policy {
+-    preemptible = true
++    preemptible = var.vm_web_preemptible
+   }
+   network_interface {
+     subnet_id = yandex_vpc_subnet.develop.id
+-    nat       = true
++    nat       = var.vm_web_nat
+   }
+ 
+   metadata = {
+-    serial-port-enable = 1
+-    ssh-keys           = "ubuntu:${var.vms_ssh_root_key}"
++    serial-port-enable = var.vm_web_serial-port-enable
++    ssh-keys           = "${var.vms_ssh_root_user}:${var.vms_ssh_root_key}"
+   }
+ 
+ }
+diff --git a/02-ter/02/src/variables.tf b/02-ter/02/src/variables.tf
+index d56fb1d..d846d57 100644
+--- a/02-ter/02/src/variables.tf
++++ b/02-ter/02/src/variables.tf
+@@ -34,7 +34,70 @@ variable "vpc_name" {
+ 
+ ###ssh vars
+ 
++variable "vms_ssh_root_user" {
++  type        = string
++  default     = "ubuntu"
++  description = "Admin's username"
++}
++
+ variable "vms_ssh_root_key" {
+   type        = string
+   description = "ssh-keygen -t ed25519"
+ }
++
++
++### VM vars
++
++variable "vm_web_family" {
++  type        = string
++  default     = "ubuntu-2004-lts"
++}
++
++variable "vm_web_name" {
++  type        = string
++  default     = "netology-develop-platform-web"
++}
++
++variable "vm_web_platform_id" {
++  type        = string
++  default     = "standard-v3"
++}
++
++variable "vm_web_cores" {
++  type        = number
++  default     = 2
++}
++
++variable "vm_web_memory" {
++  type        = number
++  default     = 1
++}
++
++variable "vm_web_core_fraction" {
++  type        = number
++  default     = 20
++}
++
++variable "vm_web_preemptible" {
++  type        = bool
++  default     = true
++}
++
++variable "vm_web_nat" {
++  type        = bool
++  default     = true
++}
++
++variable "vm_web_serial-port-enable" {
++  type        = number
++  default     = 1
++}
+```
