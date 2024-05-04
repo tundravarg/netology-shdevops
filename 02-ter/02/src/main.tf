@@ -24,9 +24,9 @@ resource "yandex_compute_instance" "platform-web" {
   name        = "${local.vm_web_name}"
   platform_id = "${var.vm_web_platform_id}"
   resources {
-    cores         = var.vm_web_cores
-    memory        = var.vm_web_memory
-    core_fraction = var.vm_web_core_fraction
+    cores         = var.vms_resources.web.cores
+    memory        = var.vms_resources.web.memory
+    core_fraction = var.vms_resources.web.core_fraction
   }
   boot_disk {
     initialize_params {
@@ -40,10 +40,7 @@ resource "yandex_compute_instance" "platform-web" {
     subnet_id = yandex_vpc_subnet.develop.id
     nat       = var.vm_web_nat
   }
-  metadata = {
-    serial-port-enable = var.vm_web_serial-port-enable
-    ssh-keys           = "${var.vms_ssh_root_user}:${var.vms_ssh_root_key}"
-  }
+  metadata = var.vms_metadata
 }
 
 
@@ -56,9 +53,9 @@ resource "yandex_compute_instance" "platform-db" {
   platform_id = "${var.vm_db_platform_id}"
   zone        = "${var.vm_db_zone}"
   resources {
-    cores         = var.vm_db_cores
-    memory        = var.vm_db_memory
-    core_fraction = var.vm_db_core_fraction
+    cores         = var.vms_resources.db.cores
+    memory        = var.vms_resources.db.memory
+    core_fraction = var.vms_resources.db.core_fraction
   }
   boot_disk {
     initialize_params {
@@ -72,8 +69,5 @@ resource "yandex_compute_instance" "platform-db" {
     subnet_id = yandex_vpc_subnet.develop-2.id
     nat       = var.vm_db_nat
   }
-  metadata = {
-    serial-port-enable = var.vm_db_serial-port-enable
-    ssh-keys           = "${var.vms_ssh_root_user}:${var.vms_ssh_root_key}"
-  }
+  metadata = var.vms_metadata
 }

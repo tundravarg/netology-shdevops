@@ -505,3 +505,214 @@ Changes to Outputs:
 
 Do you want to perform these actions?
 ```
+
+
+### Задание 6
+
+
+> 1. Вместо использования трёх переменных  ".._cores",".._memory",".._core_fraction" в блоке  resources {...}, объедините их в единую map-переменную **vms_resources** и  внутри неё конфиги обеих ВМ в виде вложенного map.
+> 3. Создайте и используйте отдельную map переменную для блока metadata, она должна быть общая для всех ваших ВМ.
+> 5. Найдите и закоментируйте все, более не используемые переменные проекта.
+> 6. Проверьте terraform plan. Изменений быть не должно.
+
+```diff
+diff --git a/02-ter/02/src/main.tf b/02-ter/02/src/main.tf
+index 04627b0..b16d9da 100644
+--- a/02-ter/02/src/main.tf
++++ b/02-ter/02/src/main.tf
+@@ -24,9 +24,9 @@ resource "yandex_compute_instance" "platform-web" {
+   name        = "${local.vm_web_name}"
+   platform_id = "${var.vm_web_platform_id}"
+   resources {
+-    cores         = var.vm_web_cores
+-    memory        = var.vm_web_memory
+-    core_fraction = var.vm_web_core_fraction
++    cores         = var.vms_resources.web.cores
++    memory        = var.vms_resources.web.memory
++    core_fraction = var.vms_resources.web.core_fraction
+   }
+   boot_disk {
+     initialize_params {
+@@ -40,10 +40,7 @@ resource "yandex_compute_instance" "platform-web" {
+     subnet_id = yandex_vpc_subnet.develop.id
+     nat       = var.vm_web_nat
+   }
+-  metadata = {
+-    serial-port-enable = var.vm_web_serial-port-enable
+-    ssh-keys           = "${var.vms_ssh_root_user}:${var.vms_ssh_root_key}"
+-  }
++  metadata = var.vms_metadata
+ }
+ 
+ 
+@@ -56,9 +53,9 @@ resource "yandex_compute_instance" "platform-db" {
+   platform_id = "${var.vm_db_platform_id}"
+   zone        = "${var.vm_db_zone}"
+   resources {
+-    cores         = var.vm_db_cores
+-    memory        = var.vm_db_memory
+-    core_fraction = var.vm_db_core_fraction
++    cores         = var.vms_resources.db.cores
++    memory        = var.vms_resources.db.memory
++    core_fraction = var.vms_resources.db.core_fraction
+   }
+   boot_disk {
+     initialize_params {
+@@ -72,8 +69,5 @@ resource "yandex_compute_instance" "platform-db" {
+     subnet_id = yandex_vpc_subnet.develop-2.id
+     nat       = var.vm_db_nat
+   }
+-  metadata = {
+-    serial-port-enable = var.vm_db_serial-port-enable
+-    ssh-keys           = "${var.vms_ssh_root_user}:${var.vms_ssh_root_key}"
+-  }
++  metadata = var.vms_metadata
+ }
+diff --git a/02-ter/02/src/terraform.tfvars b/02-ter/02/src/terraform.tfvars
+new file mode 100644
+index 0000000..530c877
+--- /dev/null
++++ b/02-ter/02/src/terraform.tfvars
+@@ -0,0 +1,17 @@
++vms_metadata = {
++  serial-port-enable = 1
++  ssh-keys           = "ubuntu:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDkF/OgffkLTOiBBsiXYEGcfHAWffmJgfJ5dF51ApukgBjtWRJtNDBKg7jlSrX26DP/mi4sN7P1A4QrMqtNlT6qIjXcx306PZ8z19EvHhzK04+ntr3hIvdm+DfzbaFi0zId07bac53UzRx0LnftMpOI+0L7ywnv4YySZFJvmbJsj3DIIjoRYAGqeOFubXx5jYDB+26GQWZXLel36H/6sY5Jye5gmnYQcwfUlMTYdLpR1Whb3O6ORRGVVbX47c28/byWdsAYjePFS9wJLywXjrEDSAjP3pvQTSYQehb80z2SQ53zxEh97xsG+tyS7ipoI6r/XtFhhBrLizRchMIiAQQpggmWnBzpdot+iwGKeuBp9p34QIwKoWFVm/Y9mh6IZGWV9H2xi/RznLHjHwsZU77HwA4+uN2uN/Z6zmBasqONfac0hH7OXmSB2jG3ae2AFTLx/yFqPObyg+HDcz2IrhqREhbV9JRVBhzB2PMu5DahoM0QKa82qjjqbk8ochmObRs= sergey@tundravarg-dt"
++}
++
++vms_resources = {
++    web = {
++        cores         = 2
++        memory        = 1
++        core_fraction = 20
++    }
++    db = {
++        cores         = 2
++        memory        = 2
++        core_fraction = 20
++    }
++}
+diff --git a/02-ter/02/src/variables.tf b/02-ter/02/src/variables.tf
+index 8acb08b..08492ed 100644
+--- a/02-ter/02/src/variables.tf
++++ b/02-ter/02/src/variables.tf
+@@ -67,13 +67,7 @@ variable "develop-2_subnet_name" {
+ 
+ ### SSH vars
+ 
+-variable "vms_ssh_root_user" {
+-  type        = string
+-  default     = "ubuntu"
+-  description = "Admin's username"
+-}
+-
+-variable "vms_ssh_root_key" {
+-  type        = string
+-  description = "ssh-keygen -t ed25519"
++variable "vms_metadata" {
++  description = "Metadata of VM"
++  type        = map
+ }
+diff --git a/02-ter/02/src/vms_platform.tf b/02-ter/02/src/vms_platform.tf
+index 9c7c15f..f9aec8f 100644
+--- a/02-ter/02/src/vms_platform.tf
++++ b/02-ter/02/src/vms_platform.tf
+@@ -1,3 +1,12 @@
++###### COMMON ####
++
++variable "vms_resources" {
++  description = "Default VM resources"
++  type        = map(any)
++}
++
++
++
+ ###### VM WEB ####
+ 
+ ### Image vars
+@@ -19,21 +28,6 @@ variable "vm_web_platform_id" {
+   default     = "standard-v3"
+ }
+ 
+-variable "vm_web_cores" {
+-  type        = number
+-  default     = 2
+-}
+-
+-variable "vm_web_memory" {
+-  type        = number
+-  default     = 1
+-}
+-
+-variable "vm_web_core_fraction" {
+-  type        = number
+-  default     = 20
+-}
+-
+ variable "vm_web_preemptible" {
+   type        = bool
+   default     = true
+@@ -44,11 +38,6 @@ variable "vm_web_nat" {
+   default     = true
+ }
+ 
+-variable "vm_web_serial-port-enable" {
+-  type        = number
+-  default     = 1
+-}
+-
+ 
+ 
+ 
+@@ -81,24 +70,6 @@ variable "vm_db_zone" {
+   description = ""
+ }
+ 
+-variable "vm_db_cores" {
+-  type        = number
+-  default     = 2
+-  description = ""
+-}
+-
+-variable "vm_db_memory" {
+-  type        = number
+-  default     = 2
+-  description = ""
+-}
+-
+-variable "vm_db_core_fraction" {
+-  type        = number
+-  default     = 20
+-  description = ""
+-}
+-
+ variable "vm_db_preemptible" {
+   type        = bool
+   default     = true
+@@ -110,9 +81,3 @@ variable "vm_db_nat" {
+   default     = true
+   description = ""
+ }
+-
+-variable "vm_db_serial-port-enable" {
+-  type        = number
+-  default     = 1
+-  description = ""
+-}
+```
+
+```
+$ terraform plan
+data.yandex_compute_image.image-db: Reading...
+data.yandex_compute_image.image-web: Reading...
+yandex_vpc_network.develop: Refreshing state... [id=enpik8elbvgttkdjfhhs]
+data.yandex_compute_image.image-db: Read complete after 0s [id=fd8cnj92ad0th7m7krqh]
+data.yandex_compute_image.image-web: Read complete after 0s [id=fd8cnj92ad0th7m7krqh]
+yandex_vpc_subnet.develop: Refreshing state... [id=e9bfnfnjt1k2f6oir4im]
+yandex_vpc_subnet.develop-2: Refreshing state... [id=e2la684j0jtgbdttf02j]
+yandex_compute_instance.platform-db: Refreshing state... [id=epdcf28jibu8qm5q3vkm]
+yandex_compute_instance.platform-web: Refreshing state... [id=fhmvlsod51ft7df4g25a]
+
+No changes. Your infrastructure matches the configuration.
+
+Terraform has compared your real infrastructure against your configuration and found no differences, so no changes are needed.
+```

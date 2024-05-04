@@ -1,3 +1,12 @@
+###### COMMON ####
+
+variable "vms_resources" {
+  description = "Default VM resources"
+  type        = map(any)
+}
+
+
+
 ###### VM WEB ####
 
 ### Image vars
@@ -19,21 +28,6 @@ variable "vm_web_platform_id" {
   default     = "standard-v3"
 }
 
-variable "vm_web_cores" {
-  type        = number
-  default     = 2
-}
-
-variable "vm_web_memory" {
-  type        = number
-  default     = 1
-}
-
-variable "vm_web_core_fraction" {
-  type        = number
-  default     = 20
-}
-
 variable "vm_web_preemptible" {
   type        = bool
   default     = true
@@ -42,11 +36,6 @@ variable "vm_web_preemptible" {
 variable "vm_web_nat" {
   type        = bool
   default     = true
-}
-
-variable "vm_web_serial-port-enable" {
-  type        = number
-  default     = 1
 }
 
 
@@ -81,24 +70,6 @@ variable "vm_db_zone" {
   description = ""
 }
 
-variable "vm_db_cores" {
-  type        = number
-  default     = 2
-  description = ""
-}
-
-variable "vm_db_memory" {
-  type        = number
-  default     = 2
-  description = ""
-}
-
-variable "vm_db_core_fraction" {
-  type        = number
-  default     = 20
-  description = ""
-}
-
 variable "vm_db_preemptible" {
   type        = bool
   default     = true
@@ -108,11 +79,5 @@ variable "vm_db_preemptible" {
 variable "vm_db_nat" {
   type        = bool
   default     = true
-  description = ""
-}
-
-variable "vm_db_serial-port-enable" {
-  type        = number
-  default     = 1
   description = ""
 }

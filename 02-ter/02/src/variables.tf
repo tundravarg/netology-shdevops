@@ -67,13 +67,7 @@ variable "develop-2_subnet_name" {
 
 ### SSH vars
 
-variable "vms_ssh_root_user" {
-  type        = string
-  default     = "ubuntu"
-  description = "Admin's username"
-}
-
-variable "vms_ssh_root_key" {
-  type        = string
-  description = "ssh-keygen -t ed25519"
+variable "vms_metadata" {
+  description = "Metadata of VM"
+  type        = map
 }
