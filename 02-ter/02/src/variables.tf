@@ -1,3 +1,16 @@
+### Project vars
+
+variable "project_name" {
+  type    = string
+  default = "netology"
+}
+
+variable "environment" {
+  type    = string
+  default = "develop-platform"
+}
+
+
 ### Cloud vars
 
 variable "token" {

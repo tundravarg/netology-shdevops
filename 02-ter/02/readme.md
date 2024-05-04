@@ -386,3 +386,122 @@ test = {
   }
 }
 ```
+
+
+### Задание 5
+
+
+> 1. В файле locals.tf опишите в **одном** local-блоке имя каждой ВМ, используйте интерполяцию ${..} с НЕСКОЛЬКИМИ переменными по примеру из лекции.
+> 2. Замените переменные внутри ресурса ВМ на созданные вами local-переменные.
+
+```diff
+diff --git a/02-ter/02/src/locals.tf b/02-ter/02/src/locals.tf
+index e69de29..781eebd 100644
+--- a/02-ter/02/src/locals.tf
++++ b/02-ter/02/src/locals.tf
+@@ -0,0 +1,4 @@
++locals {
++    vm_web_name = "${var.project_name}-${var.environment}-web"
++    vm_db_name  = "${var.project_name}-${var.environment}-db"
++}
+\ No newline at end of file
+diff --git a/02-ter/02/src/main.tf b/02-ter/02/src/main.tf
+index 7ee489e..04627b0 100644
+--- a/02-ter/02/src/main.tf
++++ b/02-ter/02/src/main.tf
+@@ -21,7 +21,7 @@ data "yandex_compute_image" "image-web" {
+ }
+ 
+ resource "yandex_compute_instance" "platform-web" {
+-  name        = "${var.vm_web_name}"
++  name        = "${local.vm_web_name}"
+   platform_id = "${var.vm_web_platform_id}"
+   resources {
+     cores         = var.vm_web_cores
+@@ -52,7 +52,7 @@ data "yandex_compute_image" "image-db" {
+ }
+ 
+ resource "yandex_compute_instance" "platform-db" {
+-  name        = "${var.vm_db_name}"
++  name        = "${local.vm_db_name}"
+   platform_id = "${var.vm_db_platform_id}"
+   zone        = "${var.vm_db_zone}"
+   resources {
+diff --git a/02-ter/02/src/variables.tf b/02-ter/02/src/variables.tf
+index bd25b6f..8acb08b 100644
+--- a/02-ter/02/src/variables.tf
++++ b/02-ter/02/src/variables.tf
+@@ -1,3 +1,16 @@
++### Project vars
++
++variable "project_name" {
++  type    = string
++  default = "netology"
++}
++
++variable "environment" {
++  type    = string
++  default = "develop-platform"
++}
++
++
+ ### Cloud vars
+ 
+ variable "token" {
+```
+
+```shell
+terraform apply -var="project_name=tuman" -var="environment=test"
+```
+
+```
+$ terraform apply -var="project_name=tuman" -var="environment=test"
+data.yandex_compute_image.image-web: Reading...
+data.yandex_compute_image.image-db: Reading...
+yandex_vpc_network.develop: Refreshing state... [id=enpik8elbvgttkdjfhhs]
+data.yandex_compute_image.image-db: Read complete after 1s [id=fd8cnj92ad0th7m7krqh]
+data.yandex_compute_image.image-web: Read complete after 1s [id=fd8cnj92ad0th7m7krqh]
+yandex_vpc_subnet.develop: Refreshing state... [id=e9bfnfnjt1k2f6oir4im]
+yandex_vpc_subnet.develop-2: Refreshing state... [id=e2la684j0jtgbdttf02j]
+yandex_compute_instance.platform-web: Refreshing state... [id=fhmvlsod51ft7df4g25a]
+yandex_compute_instance.platform-db: Refreshing state... [id=epdcf28jibu8qm5q3vkm]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  ~ update in-place
+
+Terraform will perform the following actions:
+
+  # yandex_compute_instance.platform-db will be updated in-place
+  ~ resource "yandex_compute_instance" "platform-db" {
+        id                        = "epdcf28jibu8qm5q3vkm"
+      ~ name                      = "netology-develop-platform-db" -> "tuman-test-db"
+        # (9 unchanged attributes hidden)
+
+        # (6 unchanged blocks hidden)
+    }
+
+  # yandex_compute_instance.platform-web will be updated in-place
+  ~ resource "yandex_compute_instance" "platform-web" {
+        id                        = "fhmvlsod51ft7df4g25a"
+      ~ name                      = "netology-develop-platform-web" -> "tuman-test-web"
+        # (9 unchanged attributes hidden)
+
+        # (6 unchanged blocks hidden)
+    }
+
+Plan: 0 to add, 2 to change, 0 to destroy.
+
+Changes to Outputs:
+  ~ test = {
+      ~ platform-db  = {
+          ~ instance_name = "netology-develop-platform-db" -> "tuman-test-db"
+            # (2 unchanged attributes hidden)
+        }
+      ~ platform-web = {
+          ~ instance_name = "netology-develop-platform-web" -> "tuman-test-web"
+            # (2 unchanged attributes hidden)
+        }
+    }
+
+Do you want to perform these actions?
+```
