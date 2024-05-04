@@ -7,12 +7,29 @@ resource "yandex_vpc_subnet" "develop" {
   zone           = var.default_zone
   network_id     = yandex_vpc_network.develop.id
   v4_cidr_blocks = var.default_cidr
+  route_table_id = yandex_vpc_route_table.rt.id
 }
 resource "yandex_vpc_subnet" "develop-2" {
   name           = var.develop-2_subnet_name
   zone           = var.develop-2_zone
   network_id     = yandex_vpc_network.develop.id
   v4_cidr_blocks = var.develop-2_cidr
+  route_table_id = yandex_vpc_route_table.rt.id
+}
+
+
+resource "yandex_vpc_gateway" "nat_gateway" {
+  name = "test-gateway"
+  shared_egress_gateway {}
+}
+resource "yandex_vpc_route_table" "rt" {
+  name       = "test-route-table"
+  network_id = yandex_vpc_network.develop.id
+
+  static_route {
+    destination_prefix = "0.0.0.0/0"
+    gateway_id         = yandex_vpc_gateway.nat_gateway.id
+  }
 }
 
 

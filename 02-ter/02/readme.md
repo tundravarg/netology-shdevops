@@ -793,3 +793,86 @@ variable "test" {
 > var.test[0]["dev1"][0]
 "ssh -o 'StrictHostKeyChecking=no' ubuntu@62.84.124.117"
 ```
+
+
+
+### Задание 9*
+
+
+> Для подключения предварительно через ssh измените пароль пользователя: ```sudo passwd ubuntu```
+
+```
+ssh ubuntu@84.252.131.47
+sudo passwd ubuntu
+exit
+
+ssh ubuntu@51.250.26.107
+sudo passwd ubuntu
+exit
+```
+
+> Используя инструкцию https://cloud.yandex.ru/ru/docs/vpc/operations/create-nat-gateway#tf_1, настройте для ваших ВМ nat_gateway.
+
+```diff
+diff --git a/02-ter/02/src/main.tf b/02-ter/02/src/main.tf
+index b16d9da..d0aa889 100644
+--- a/02-ter/02/src/main.tf
++++ b/02-ter/02/src/main.tf
+@@ -7,12 +7,29 @@ resource "yandex_vpc_subnet" "develop" {
+   zone           = var.default_zone
+   network_id     = yandex_vpc_network.develop.id
+   v4_cidr_blocks = var.default_cidr
++  route_table_id = yandex_vpc_route_table.rt.id
+ }
+ resource "yandex_vpc_subnet" "develop-2" {
+   name           = var.develop-2_subnet_name
+   zone           = var.develop-2_zone
+   network_id     = yandex_vpc_network.develop.id
+   v4_cidr_blocks = var.develop-2_cidr
++  route_table_id = yandex_vpc_route_table.rt.id
++}
++
++
++resource "yandex_vpc_gateway" "nat_gateway" {
++  name = "test-gateway"
++  shared_egress_gateway {}
++}
++resource "yandex_vpc_route_table" "rt" {
++  name       = "test-route-table"
++  network_id = yandex_vpc_network.develop.id
++
++  static_route {
++    destination_prefix = "0.0.0.0/0"
++    gateway_id         = yandex_vpc_gateway.nat_gateway.id
++  }
+ }
+ 
+ 
+diff --git a/02-ter/02/src/vms_platform.tf b/02-ter/02/src/vms_platform.tf
+index f9aec8f..90ab194 100644
+--- a/02-ter/02/src/vms_platform.tf
++++ b/02-ter/02/src/vms_platform.tf
+@@ -35,7 +35,7 @@ variable "vm_web_preemptible" {
+ 
+ variable "vm_web_nat" {
+   type        = bool
+-  default     = true
++  default     = false
+ }
+ 
+ 
+@@ -78,6 +78,6 @@ variable "vm_db_preemptible" {
+ 
+ variable "vm_db_nat" {
+   type        = bool
+-  default     = true
++  default     = false
+   description = ""
+ }
+```
+
+> Для проверки уберите внешний IP адрес (nat=false) у ваших ВМ и проверьте доступ в интернет с ВМ, подключившись к ней через serial console.
+
+![Result](files/ter-02-9-1.jpg)
+
+![Result](files/ter-02-9-2.jpg)

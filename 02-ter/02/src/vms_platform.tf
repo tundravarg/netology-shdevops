@@ -35,7 +35,7 @@ variable "vm_web_preemptible" {
 
 variable "vm_web_nat" {
   type        = bool
-  default     = true
+  default     = false
 }
 
 
@@ -78,6 +78,6 @@ variable "vm_db_preemptible" {
 
 variable "vm_db_nat" {
   type        = bool
-  default     = true
+  default     = false
   description = ""
 }
