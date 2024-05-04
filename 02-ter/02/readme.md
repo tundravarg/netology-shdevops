@@ -334,3 +334,55 @@ index 5d841ce..7ee489e 100644
 ![Result](files/ter-02-3-1.jpg)
 
 ![Result](files/ter-02-3-2.jpg)
+
+
+
+### Задание 4
+
+
+> 1. Объявите в файле outputs.tf **один** output , содержащий: instance_name, external_ip, fqdn для каждой из ВМ в удобном лично для вас формате.
+
+```tf
+output "test" {
+
+    description = "VMs"
+
+    value = {
+        platform-web = {
+            instance_name = yandex_compute_instance.platform-web.name,
+            external_ip = yandex_compute_instance.platform-web.network_interface[0].nat_ip_address,
+            fqdn = yandex_compute_instance.platform-web.fqdn
+        },
+        platform-db = {
+            instance_name = yandex_compute_instance.platform-db.name,
+            external_ip = yandex_compute_instance.platform-db.network_interface[0].nat_ip_address,
+            fqdn = yandex_compute_instance.platform-db.fqdn
+        }
+    }
+
+}
+```
+
+Вывод:
+
+```
+terraform apply
+...
+
+Apply complete! Resources: 0 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+test = {
+  "platform-db" = {
+    "external_ip" = "158.160.70.4"
+    "fqdn" = "epdcf28jibu8qm5q3vkm.auto.internal"
+    "instance_name" = "netology-develop-platform-db"
+  }
+  "platform-web" = {
+    "external_ip" = "158.160.102.66"
+    "fqdn" = "fhmvlsod51ft7df4g25a.auto.internal"
+    "instance_name" = "netology-develop-platform-web"
+  }
+}
+```
