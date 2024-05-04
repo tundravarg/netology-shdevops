@@ -1,4 +1,5 @@
-###cloud vars
+### Cloud vars
+
 variable "token" {
   type        = string
   description = "OAuth-token; https://cloud.yandex.ru/docs/iam/concepts/authorization/oauth-token"
@@ -14,6 +15,12 @@ variable "folder_id" {
   description = "https://cloud.yandex.ru/docs/resource-manager/operations/folder/get-id"
 }
 
+variable "vpc_name" {
+  type        = string
+  default     = "develop"
+  description = "VPC network"
+}
+
 variable "default_zone" {
   type        = string
   default     = "ru-central1-a"
@@ -24,15 +31,28 @@ variable "default_cidr" {
   default     = ["10.0.1.0/24"]
   description = "https://cloud.yandex.ru/docs/vpc/operations/subnet-create"
 }
-
-variable "vpc_name" {
+variable "default_subnet_name" {
   type        = string
   default     = "develop"
-  description = "VPC network & subnet name"
+  description = "VPC default subnet name"
+}
+
+variable "develop-2_zone" {
+  type        = string
+  default     = "ru-central1-b"
+}
+variable "develop-2_cidr" {
+  type        = list(string)
+  default     = ["10.0.2.0/24"]
+}
+variable "develop-2_subnet_name" {
+  type        = string
+  default     = "develop-2"
+  description = "VPC develop-2 subnet name"
 }
 
 
-###ssh vars
+### SSH vars
 
 variable "vms_ssh_root_user" {
   type        = string
@@ -43,52 +63,4 @@ variable "vms_ssh_root_user" {
 variable "vms_ssh_root_key" {
   type        = string
   description = "ssh-keygen -t ed25519"
-}
-
-
-### VM vars
-
-variable "vm_web_family" {
-  type        = string
-  default     = "ubuntu-2004-lts"
-}
-
-variable "vm_web_name" {
-  type        = string
-  default     = "netology-develop-platform-web"
-}
-
-variable "vm_web_platform_id" {
-  type        = string
-  default     = "standard-v3"
-}
-
-variable "vm_web_cores" {
-  type        = number
-  default     = 2
-}
-
-variable "vm_web_memory" {
-  type        = number
-  default     = 1
-}
-
-variable "vm_web_core_fraction" {
-  type        = number
-  default     = 20
-}
-
-variable "vm_web_preemptible" {
-  type        = bool
-  default     = true
-}
-
-variable "vm_web_nat" {
-  type        = bool
-  default     = true
-}
-
-variable "vm_web_serial-port-enable" {
-  type        = number
-  default     = 1
 }
