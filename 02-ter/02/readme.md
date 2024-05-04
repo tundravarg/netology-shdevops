@@ -716,3 +716,36 @@ No changes. Your infrastructure matches the configuration.
 
 Terraform has compared your real infrastructure against your configuration and found no differences, so no changes are needed.
 ```
+
+
+
+### Задание 7*
+
+
+> 1. Напишите, какой командой можно отобразить **второй** элемент списка test_list.
+
+```
+> local.test_list[1]
+"staging"
+```
+
+> 2. Найдите длину списка test_list с помощью функции length(<имя переменной>).
+
+```
+> length(local.test_list)
+3
+```
+
+> 3. Напишите, какой командой можно отобразить значение ключа admin из map test_map.
+
+```
+> local.test_map["admin"]
+"John"
+```
+
+> 4. Напишите interpolation-выражение, результатом которого будет: "John is admin for production server based on OS ubuntu-20-04 with X vcpu, Y ram and Z virtual disks", используйте данные из переменных test_list, test_map, servers и функцию length() для подстановки значений.
+
+```
+> "John is ${keys(local.test_map)[index(values(local.test_map), "John")]} for production server based on OS ${local.servers["production"]["image"]} with ${local.servers["production"]["cpu"]} vcpu, ${local.servers["production"]["ram"]} ram and ${length(local.servers["production"]["disks"])} virtual disks"
+"John is admin for production server based on OS ubuntu-20-04 with 10 vcpu, 40 ram and 4 virtual disks"
+```
