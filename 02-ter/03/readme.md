@@ -408,3 +408,33 @@ replica  ansible_host=158.160.97.81  fqdn=db-replica.ru-central1.internal
 
 storage  ansible_host=158.160.99.231  fqdn=storage.ru-central1.internal
 ```
+
+
+
+## Задание 5* (необязательное)
+
+> 1. Напишите output, который отобразит ВМ из ваших ресурсов count и for_each в виде списка словарей.
+
+`outputs.tf`:
+
+```
+output "VMs" {
+
+    description = "Created VMs"
+
+    value = [
+        for vm in concat(
+            yandex_compute_instance.web,
+            values(yandex_compute_instance.db),
+            [yandex_compute_instance.storage]
+        ): {
+            name = vm.name
+            id = vm.id
+            fqdn = vm.fqdn
+        }
+    ]
+    
+}
+```
+
+![Result](files/ter-03-5.jpg)
