@@ -1,5 +1,6 @@
 resource "yandex_compute_instance" "count" {
     count = 2
+    depends_on = [ yandex_compute_instance.foreach ]
 
     name = "web-${count.index + 1}"
     platform_id = "standard-v3"

@@ -152,3 +152,47 @@ resource "yandex_compute_instance" "foreach" {
     Поэтому тип был заменён на `map(object)`.
 
 ![Result](files/ter-03-2-2-1.jpg)
+
+
+> 4. ВМ из пункта 2.1 должны создаваться после создания ВМ из пункта 2.2.
+
+Без указания `depends_on`:
+
+```log
+yandex_compute_instance.count[0]: Creating...
+yandex_compute_instance.foreach["replica"]: Creating...
+yandex_compute_instance.count[1]: Creating...
+yandex_compute_instance.foreach["main"]: Creating...
+...
+```
+
+```diff
+--- a/02-ter/03/src/count-vm.tf
++++ b/02-ter/03/src/count-vm.tf
+@@ -1,5 +1,6 @@
+ resource "yandex_compute_instance" "count" {
+     count = 2
++    depends_on = [ yandex_compute_instance.foreach ]
+ 
+     name = "web-${count.index + 1}"
+     platform_id = "standard-v3"
+```
+
+После указания `depends_on`:
+
+```log
+yandex_compute_instance.foreach["main"]: Creating...
+yandex_compute_instance.foreach["replica"]: Creating...
+yandex_compute_instance.foreach["replica"]: Still creating... [10s elapsed]
+yandex_compute_instance.foreach["main"]: Still creating... [10s elapsed]
+yandex_compute_instance.foreach["main"]: Still creating... [20s elapsed]
+yandex_compute_instance.foreach["replica"]: Still creating... [20s elapsed]
+yandex_compute_instance.foreach["main"]: Still creating... [30s elapsed]
+yandex_compute_instance.foreach["replica"]: Still creating... [30s elapsed]
+yandex_compute_instance.foreach["main"]: Creation complete after 40s [id=fhmrs33mfrt9qi3qm3b9]
+yandex_compute_instance.foreach["replica"]: Still creating... [40s elapsed]
+yandex_compute_instance.foreach["replica"]: Creation complete after 40s [id=fhmo9ejok1ceg3r1ejoq]
+yandex_compute_instance.count[0]: Creating...
+yandex_compute_instance.count[1]: Creating...
+...
+```
