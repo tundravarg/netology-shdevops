@@ -19,10 +19,11 @@ variable "each_vm" {
 }
 
 
-resource "yandex_compute_instance" "foreach" {
+resource "yandex_compute_instance" "db" {
     for_each = var.each_vm
 
     name = "${each.key}"
+    hostname = "db-${each.key}"
     platform_id = "standard-v3"
     resources {
         cores = each.value.cpu
