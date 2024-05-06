@@ -35,3 +35,59 @@ terraform apply
 ```
 
 ![Result](files/ter-03-1-1.jpg)
+
+
+
+## Задание 2
+
+
+> 1. Создайте файл count-vm.tf. Опишите в нём создание двух **одинаковых** ВМ  web-1 и web-2 (не web-0 и web-1) с минимальными параметрами, используя мета-аргумент **count loop**. Назначьте ВМ созданную в первом задании группу безопасности.
+
+https://docs.comcloud.xyz/providers/yandex-cloud/yandex/latest/docs
+
+```conf
+variable "default_metadata" {
+  description = "Metadata of VM"
+  type        = map
+}
+
+data "yandex_compute_image" "default_image" {
+  family = "ubuntu-2004-lts"
+}
+
+resource "yandex_compute_instance" "count" {
+    count = 2
+
+    name = "web-${count.index + 1}"
+    platform_id = "standard-v3"
+    resources {
+        cores = 2
+        memory = 1
+        core_fraction = 20
+    }
+    boot_disk {
+        initialize_params {
+            image_id = data.yandex_compute_image.default_image.image_id
+        }
+    }
+    scheduling_policy {
+        preemptible = true
+    }
+    network_interface {
+        subnet_id = yandex_vpc_subnet.develop.id
+        security_group_ids = [
+            yandex_vpc_security_group.example.id
+        ]
+        nat = true
+    }
+    metadata = var.default_metadata
+}
+```
+
+**NOTE:** Комментарий к коду:
+Артефакты в разных файлах. 
+Здесь - хардкод значений, т.к., считаю, нет смысла усложнять на данном этапе, суть задания не в этом.
+
+![Result](files/ter-03-2-1-1.jpg)
+
+![Result](files/ter-03-2-1-2.jpg)

@@ -30,3 +30,12 @@ variable "vpc_name" {
   default     = "develop"
   description = "VPC network&subnet name"
 }
+
+
+
+### SSH
+
+variable "default_metadata" {
+  description = "Metadata of VM"
+  type        = map
+}
