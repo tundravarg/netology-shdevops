@@ -7,25 +7,16 @@
 
 > 2. Заполните файл personal.auto.tfvars.
 
-Поля `cloud_id` и `folder_id` заполнил значениями из UI Yandex Cloud.
+Поля `cloud_id` и `folder_id` заполняются значениями из UI Yandex Cloud.
 
-Вместо заполнения поля `token`, сгенерировал IAM-ключ,
-скопировал его куда-то в домашний каталог и
-прописал его в `providers.tf`.
+Получение токена:
+* Если профиль не создан и ключ не добавлен:
+    * https://yandex.cloud/ru/docs/iam/operations/iam-token/create-for-sa
+    * Создание профиля: `yc config profile create <account-name>`
+    * Создание авторизационного ключа сервисного аккаунта: `yc iam key create --service-account-name <account-name> --output key.json`
+    * Указание ключа для профиля: `yc config set service-account-key key.json`
+* Получение IAM-токена: `yc iam create-token`
 
-Создание токена:
-
-```shell
-yc iam key create --service-account-name <имя_сервисного_аккаунта> -o key.json
-```
-
-providers.tf:
-
-```conf
-provider "yandex" {
-#  token     = var.token
-  service_account_key_file = file("~/.config/yandex-cloud/.iam_key.json")
-```
 
 > 3. Инициализируйте проект, выполните код.
 
