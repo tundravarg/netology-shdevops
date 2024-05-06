@@ -9,7 +9,12 @@
 
 1. Настроить `yc`: https://yandex.cloud/en/docs/cli/quickstart#install
 2. Создать сервисный аккаунт с ролью `admin` в Yandex Cloud (через UI).
-3. Получить IAM-токен: `yc iam key create --service-account-name <имя_сервисного_аккаунта> -o key.json`.
+3. Получить IAM-токен: https://yandex.cloud/ru/docs/iam/operations/iam-token/create-for-sa
+    1. Если профиль ещё не создан:
+        1. Создать профиля: `yc config profile create <account-name>`
+        2. Создать авторизационного ключа сервисного аккаунта: `yc iam key create --service-account-name <account-name> --output key.json`
+        3. Указать ключа для профиля: `yc config set service-account-key key.json`
+    2. Получить IAM-токена: `yc iam create-token`
 
 
 > 3. Сгенерируйте новый или используйте свой текущий ssh-ключ. Запишите его открытую(public) часть в переменную vms_ssh_public_root_key.

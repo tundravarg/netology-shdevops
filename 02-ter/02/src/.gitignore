@@ -10,7 +10,3 @@
 
 # own secret vars store.
 personal.auto.tfvars
-
-# authorized key
-.authorized_key.json
-target-folder.auto.tfvars
