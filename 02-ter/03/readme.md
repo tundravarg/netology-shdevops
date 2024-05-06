@@ -279,3 +279,55 @@ $ cut -c-64 ~/.ssh/netology.pub
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDkF/OgffkLTOiBBsiXYEGcfHAW    
 ```
 ![Result](files/ter-03-2-5.jpg)
+
+
+
+## Задание 3
+
+> 1. Создайте 3 одинаковых виртуальных диска размером 1 Гб с помощью ресурса yandex_compute_disk и мета-аргумента count в файле **disk_vm.tf** .
+> 2. Создайте в том же файле **одиночную**(использовать count или for_each запрещено из-за задания №4) ВМ c именем "storage"  . Используйте блок **dynamic secondary_disk{..}** и мета-аргумент for_each для подключения созданных вами дополнительных дисков.
+
+```conf
+resource "yandex_compute_disk" "storage" {
+    count = 3
+
+    name = "storage-${count.index}"
+    type = "network-hdd"
+    size = 1
+}
+
+resource "yandex_compute_instance" "storage" {
+    name = "storage"
+    platform_id = "standard-v1"
+    resources {
+        cores = 2
+        memory = 1
+        core_fraction = 20
+    }
+    boot_disk {
+        initialize_params {
+            image_id = data.yandex_compute_image.default_image.image_id
+        }
+    }
+    dynamic "secondary_disk" {
+        for_each = yandex_compute_disk.storage
+        content {
+            disk_id = lookup(secondary_disk.value, "id")
+        }
+    }
+    scheduling_policy {
+        preemptible = true
+    }
+    network_interface {
+        subnet_id = yandex_vpc_subnet.develop.id
+        security_group_ids = [
+            yandex_vpc_security_group.example.id
+        ]
+        nat = true
+    }
+    metadata = local.default_metadata
+}
+
+```
+
+![Result](files/ter-03-3.jpg)
