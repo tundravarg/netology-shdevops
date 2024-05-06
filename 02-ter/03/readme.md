@@ -331,3 +331,80 @@ resource "yandex_compute_instance" "storage" {
 ```
 
 ![Result](files/ter-03-3.jpg)
+
+
+
+## Задание 4
+
+
+> 1. В файле ansible.tf создайте inventory-файл для ansible.
+>    Используйте функцию tepmplatefile и файл-шаблон для создания ansible inventory-файла.
+>    Передайте в него в качестве переменных группы виртуальных машин из задания 2.1, 2.2 и 3.2, т. е. 5 ВМ.
+> 2. Инвентарь должен содержать 3 группы и быть динамическим, т. е. обработать как группу из 2-х ВМ, так и 999 ВМ.
+> 3. Добавьте в инвентарь переменную  [**fqdn**](https://cloud.yandex.ru/docs/compute/concepts/network#hostname).
+> 4. Выполните код. Приложите скриншот получившегося файла. 
+
+`ansible.tfpl`:
+
+```
+[webservers]
+
+%{~ for i in webservers ~}
+
+${i["name"]}  ansible_host=${i["network_interface"][0]["nat_ip_address"]}  fqdn=${i["fqdn"]}
+%{~ endfor ~}
+
+
+
+[databases]
+
+%{~ for i in databases ~}
+
+${i["name"]}  ansible_host=${i["network_interface"][0]["nat_ip_address"]}  fqdn=${i["fqdn"]}
+%{~ endfor ~}
+
+
+
+[storage]
+
+${storage.name}  ansible_host=${storage.network_interface[0].nat_ip_address}  fqdn=${storage.fqdn}
+
+```
+
+`ansible.td`:
+
+```
+resource "local_file" "hosts_templatefile" {
+    content = templatefile(
+        "${path.module}/ansible.tftpl",
+        {
+            webservers = yandex_compute_instance.web
+            databases  = yandex_compute_instance.db
+            storage    = yandex_compute_instance.storage
+        }
+    )
+    filename = "${abspath(path.module)}/hosts.cfg"
+}
+```
+
+\+ Добавил `hostname` к `db` и `storage`, а к `web` не добавлял.
+
+`hosts.cfg`:
+
+```
+[webservers]
+
+web-1  ansible_host=158.160.104.128  fqdn=fhmhk1o7svdgqg7p9jki.auto.internal
+web-2  ansible_host=51.250.1.16  fqdn=fhmgogidprga56so7ujv.auto.internal
+
+
+[databases]
+
+main  ansible_host=158.160.117.166  fqdn=db-main.ru-central1.internal
+replica  ansible_host=158.160.97.81  fqdn=db-replica.ru-central1.internal
+
+
+[storage]
+
+storage  ansible_host=158.160.99.231  fqdn=storage.ru-central1.internal
+```
