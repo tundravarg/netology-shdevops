@@ -438,3 +438,24 @@ output "VMs" {
 ```
 
 ![Result](files/ter-03-5.jpg)
+
+
+
+## Задание 7*
+
+```
+> {network_id = local.src.network_id, subnet_ids = concat(slice(local.src.subnet_ids, 0, 2), slice(local.src.subnet_ids, 3, length(local.src.subnet_ids))), subnet_zones = concat(slice(local.src.subnet_zones, 0, 2), slice(local.src.subnet_zones, 3, length(local.src.subnet_zones)))}
+{
+  "network_id" = "enp7i560tb28nageq0cc"
+  "subnet_ids" = [
+    "e9b0le401619ngf4h68n",
+    "e2lbar6u8b2ftd7f5hia",
+    "fl8ner8rjsio6rcpcf0h",
+  ]
+  "subnet_zones" = [
+    "ru-central1-a",
+    "ru-central1-b",
+    "ru-central1-d",
+  ]
+}
+```
