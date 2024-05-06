@@ -196,3 +196,86 @@ yandex_compute_instance.count[0]: Creating...
 yandex_compute_instance.count[1]: Creating...
 ...
 ```
+
+> 5. Используйте функцию file в local-переменной для считывания ключа ~/.ssh/id_rsa.pub и его последующего использования в блоке metadata, взятому из ДЗ 2.
+
+```diff
+diff --git a/02-ter/03/src/count-vm.tf b/02-ter/03/src/count-vm.tf
+index 69e357c..319d13a 100644
+--- a/02-ter/03/src/count-vm.tf
++++ b/02-ter/03/src/count-vm.tf
+@@ -24,5 +24,5 @@ resource "yandex_compute_instance" "count" {
+         ]
+         nat = true
+     }
+-    metadata = var.default_metadata
++    metadata = local.default_metadata
+ }
+
+diff --git a/02-ter/03/src/for_each-vm.tf b/02-ter/03/src/for_each-vm.tf
+index 12ea33f..fb77db2 100644
+--- a/02-ter/03/src/for_each-vm.tf
++++ b/02-ter/03/src/for_each-vm.tf
+@@ -45,5 +45,5 @@ resource "yandex_compute_instance" "foreach" {
+         ]
+         nat = true
+     }
+-    metadata = var.default_metadata
++    metadata = local.default_metadata
+ }
+
+diff --git a/02-ter/03/src/locals.tf b/02-ter/03/src/locals.tf
+new file mode 100644
+index 0000000..96bbb11
+--- /dev/null
++++ b/02-ter/03/src/locals.tf
+@@ -0,0 +1,8 @@
++### SSH
++
++locals {
++    default_metadata = {
++        serial-port-enable = 1
++        ssh-keys = file(var.default_ssh_pub_key_file)
++    }
++}
+
+diff --git a/02-ter/03/src/terraform.tfvars b/02-ter/03/src/terraform.tfvars
+index f2e2c32..e69de29 100644
+--- a/02-ter/03/src/terraform.tfvars
++++ b/02-ter/03/src/terraform.tfvars
+@@ -1,4 +0,0 @@
+-default_metadata = {
+-  serial-port-enable = 1
+-  ssh-keys           = "ubuntu:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDkF/OgffkLTOiBBsiXYEGcfHAWffmJgfJ5dF51ApukgBjtWRJtNDBKg7jlSrX26DP/mi4sN7P1A4QrMqtNlT6qIjXcx306PZ8z19EvHhzK04+ntr3hIvdm+DfzbaFi0zId07bac53UzRx0LnftMpOI+0L7ywnv4YySZFJvmbJsj3DIIjoRYAGqeOFubXx5jYDB+26GQWZXLel36H/6sY5Jye5gmnYQcwfUlMTYdLpR1Whb3O6ORRGVVbX47c28/byWdsAYjePFS9wJLywXjrEDSAjP3pvQTSYQehb80z2SQ53zxEh97xsG+tyS7ipoI6r/XtFhhBrLizRchMIiAQQpggmWnBzpdot+iwGKeuBp9p34QIwKoWFVm/Y9mh6IZGWV9H2xi/RznLHjHwsZU77HwA4+uN2uN/Z6zmBasqONfac0hH7OXmSB2jG3ae2AFTLx/yFqPObyg+HDcz2IrhqREhbV9JRVBhzB2PMu5DahoM0QKa82qjjqbk8ochmObRs= sergey@tundravarg-dt"
+-}
+\ No newline at end of file
+
+diff --git a/02-ter/03/src/variables.tf b/02-ter/03/src/variables.tf
+index f8d83a2..b387cb1 100644
+--- a/02-ter/03/src/variables.tf
++++ b/02-ter/03/src/variables.tf
+@@ -32,10 +32,10 @@ variable "vpc_name" {
+ }
+ 
+ 
+-
+ ### SSH
+ 
+-variable "default_metadata" {
+-  description = "Metadata of VM"
+-  type        = map
+-}
+\ No newline at end of file
++variable "default_ssh_pub_key_file" {
++    description = "Path to pub key"
++    type = string
++    default = "~/.ssh/id_rsa.pub"
++}
+
+```
+
+```shell
+$ cut -c-64 ~/.ssh/netology.pub
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDkF/OgffkLTOiBBsiXYEGcfHAW    
+```
+![Result](files/ter-03-2-5.jpg)
