@@ -24,5 +24,5 @@ resource "yandex_compute_instance" "count" {
         ]
         nat = true
     }
-    metadata = var.default_metadata
+    metadata = local.default_metadata
 }

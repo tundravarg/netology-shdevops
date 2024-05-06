@@ -45,5 +45,5 @@ resource "yandex_compute_instance" "foreach" {
         ]
         nat = true
     }
-    metadata = var.default_metadata
+    metadata = local.default_metadata
 }

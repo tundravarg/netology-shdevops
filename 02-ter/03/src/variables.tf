@@ -32,10 +32,10 @@ variable "vpc_name" {
 }
 
 
-
 ### SSH
 
-variable "default_metadata" {
-  description = "Metadata of VM"
-  type        = map
+variable "default_ssh_pub_key_file" {
+    description = "Path to pub key"
+    type = string
+    default = "~/.ssh/id_rsa.pub"
 }
