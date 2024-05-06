@@ -91,3 +91,64 @@ resource "yandex_compute_instance" "count" {
 ![Result](files/ter-03-2-1-1.jpg)
 
 ![Result](files/ter-03-2-1-2.jpg)
+
+
+> 2. Создайте файл for_each-vm.tf. Опишите в нём создание двух ВМ для баз данных с именами "main" и "replica" **разных** по cpu/ram/disk_volume , используя мета-аргумент **for_each loop**.
+
+```conf
+variable "each_vm" {
+    type = map(object({ 
+        cpu = number, 
+        ram = number,
+        disk_volume = number
+    }))
+    default = {
+        "main" = {
+            cpu = 4
+            ram = 4
+            disk_volume = 16
+        },
+        "replica" = {
+            cpu = 2
+            ram = 2
+            disk_volume = 8
+        }
+    }
+}
+
+resource "yandex_compute_instance" "foreach" {
+    for_each = var.each_vm
+
+    name = "${each.key}"
+    platform_id = "standard-v3"
+    resources {
+        cores = each.value.cpu
+        memory = each.value.ram
+        core_fraction = 20
+    }
+    boot_disk {
+        initialize_params {
+            image_id = data.yandex_compute_image.default_image.image_id
+            size = each.value.disk_volume
+        }
+    }
+    scheduling_policy {
+        preemptible = true
+    }
+    network_interface {
+        subnet_id = yandex_vpc_subnet.develop.id
+        security_group_ids = [
+            yandex_vpc_security_group.example.id
+        ]
+        nat = true
+    }
+    metadata = var.default_metadata
+}
+```
+
+**NOTE:**
+    Использовать предложенный в задании тип переменной не получилось по причине ошибки
+    `"for_each" supports maps and sets of strings, but you have provided a set containing type object.`.
+    Поэтому тип был заменён на `map(object)`.
+
+![Result](files/ter-03-2-2-1.jpg)
