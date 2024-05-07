@@ -13,13 +13,34 @@ Jira запущена посредством docker-compose, приведённ�
     Но при старте контейнера он получил владельца, группу и права, отличные от моего пользовательского аккаунта.
     Т.о. пото придётся удалять его через `sudo`. А если бы админских прав не было...
 
-![Screenshot](files/ci-01-1.jpg)
+![Screenshot](files/ci-01-jira.jpg)
 
 
 
 ## Создать доски Kanban и Scrum
 
 
-![Screenshot](files/ci-01-2-1.jpg)
+![Screenshot](files/ci-01-kanban-board.jpg)
 
-![Screenshot](files/ci-01-2-2.jpg)
+![Screenshot](files/ci-01-scrum-backlog.jpg)
+
+
+
+## Workflow
+
+
+![Screenshot](files/ci-01-bugflow.jpg)
+
+[Bug flow.xml](files/Bug%20flow.xml)
+
+![Screenshot](files/ci-01-simpleflow.jpg)
+
+[Simple.xml](files/Simple.xml)
+
+![Screenshot](files/ci-01-flow-assignment.jpg)
+
+![Screenshot](files/ci-01-kanban-struct.jpg)
+
+![Screenshot](files/ci-01-scrum-struct.jpg)
+
+
