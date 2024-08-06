@@ -1,0 +1,39 @@
+services:
+
+  ctrl:
+    container_name: ctrl
+    image: ctrl:0.0.1
+    build:
+      context: .
+      dockerfile: ctrl.Dockerfile
+    environment:
+      MSG: "ctrl"
+      ANSIBLE_USERNAME: ansbl
+      ANSIBLE_PASSWORD:  rerere123
+      ANSIBLE_HOST_KEY_CHECKING: false
+    volumes:
+      - ./playbook:/init/playbook
+
+  ubuntu:
+    container_name: ubuntu
+    image: ubuntu:0.0.1
+    build:
+      context: .
+      dockerfile: ubuntu.Dockerfile
+      args:
+        ANSIBLE_USERNAME: ansbl
+        ANSIBLE_PASSWORD:  rerere123
+    environment:
+      MSG: "ubuntu"
+
+  centos7:
+    container_name: centos7
+    image: centos:0.0.1
+    build:
+      context: .
+      dockerfile: centos7.Dockerfile
+      args:
+        ANSIBLE_USERNAME: ansbl
+        ANSIBLE_PASSWORD:  rerere123
+    environment:
+      MSG: "centos7"

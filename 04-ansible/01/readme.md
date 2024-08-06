@@ -95,3 +95,93 @@ ok: [localhost] => {
 PLAY RECAP *************************************************************************************************************
 localhost                  : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 ```
+
+
+### 3. Воспользуйтесь подготовленным (используется `docker`) или создайте собственное окружение для проведения дальнейших испытаний.
+
+
+Control node:
+
+* SSH Client
+    * Alpine: `apk add openssh`
+    * Export env: `ANSIBLE_HOST_KEY_CHECKING: false`
+* Ansible
+    * Alpine: `apk add ansible`
+        * Python will be automaticaly installed as a dependency.
+    * Specific version:
+        ```shell
+        apk add python3 pipx
+        pipx install --include-deps ansible==9.8.0
+        pipx ensurepath
+        source ~/.bashrc
+        ```
+        * NOTE: Текущая на данный момент версия Ansible Core 2.17 (Ansible 10.2.0) не поддерживает Python 3.6, который устанавливается в CentOS 7.
+            Поэтому понижаем версию до 9.8.0, где эта проблема не воспроизводится.
+
+Managed node:
+
+* Python
+    * Debian: `apt install -y python3`
+    * CentOS: `yum install -y python3`
+* SSH Server
+    * Debian: `apt install -y openssh-server`
+    * CentOS: `yum install -y openssh-server`
+* User, is used to connect via ssh
+    * Debian: `apt install -y sudo`
+    * CentOS: `yum install -y sudo`
+    * Create user for Ansible (see: "Cheat sheet" / "Add Ansible user")
+
+
+
+
+
+## Cheat sheet
+
+
+### Alpine
+
+```shell
+apk update
+apk add <pkg-name>
+```
+
+
+### Debian
+
+```shell
+apt update -y
+apt dist-upgrade -y
+apt install -y <pkg-name>
+```
+
+
+### CentOS
+
+> Репозитории и зеркала CentOS 7 теперь отключены, поэтому при запуске команд YUM возникают ошибки, связанные с Mirrorlist.centos.org. 
+
+```shell
+sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+```
+
+
+### Add Ansible user
+
+```shell
+useradd ansbl
+printf "<password>\n<password>" | passwd ansbl
+usermod -aG sudo ansbl
+mkdir -p /home/ansbl && \
+chown ansbl:ansbl /home/ansbl && \
+```
+
+NOTE: "sudo" group in Debian, "wheel" group in "CentOS".
+
+
+### Docker
+
+```shell
+docker build --label ctrl-node --progress plain -f Dockerfile.ctrl .
+docker compose up --build
+docker compose rm -f
+```

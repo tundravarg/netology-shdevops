@@ -2,8 +2,13 @@
   el:
     hosts:
       centos7:
-        ansible_connection: docker
+        ansible_connection: ssh
+        ansible_user: ansbl
+        ansible_ssh_pass: rerere123
+        ansible_python_interpreter: /usr/bin/python3
   deb:
     hosts:
       ubuntu:
-        ansible_connection: docker
+        ansible_connection: ssh
+        ansible_user: ansbl
+        ansible_ssh_pass: rerere123
