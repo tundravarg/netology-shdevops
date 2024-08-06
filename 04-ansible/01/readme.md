@@ -21,3 +21,77 @@ source .local/bin/activate
 python3 -m pip install ansible
 ansible --version
 ```
+
+
+
+## Основная часть
+
+
+### 1. Попробуйте запустить playbook на окружении из `test.yml`, зафиксируйте значение, которое имеет факт `some_fact` для указанного хоста при выполнении playbook.
+
+
+```shell
+ansible-playbook site.yml -i inventory/test.yml
+```
+
+```
+Tuman $ ansible-playbook site.yml -i inventory/test.yml 
+
+PLAY [Print os facts] **************************************************************************************************
+
+TASK [Gathering Facts] *************************************************************************************************
+[WARNING]: Platform darwin on host localhost is using the discovered Python interpreter at
+/Users/20154398/.local/myvenv/bin/python3.12, but future installation of another Python interpreter could change the
+meaning of that path. See https://docs.ansible.com/ansible-core/2.17/reference_appendices/interpreter_discovery.html
+for more information.
+ok: [localhost]
+
+TASK [Print OS] ********************************************************************************************************
+ok: [localhost] => {
+    "msg": "MacOSX"
+}
+
+TASK [Print fact] ******************************************************************************************************
+ok: [localhost] => {
+    "msg": 12
+}
+
+PLAY RECAP *************************************************************************************************************
+localhost                  : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0  
+```
+
+
+### 2. Найдите файл с переменными (group_vars), в котором задаётся найденное в первом пункте значение, и поменяйте его на all default fact.
+
+`04-ansible/01/playbook/group_vars/all/examp.yml`:
+
+```yml
+---
+  some_fact: all default fact
+```
+
+```
+Tuman $ ansible-playbook site.yml -i inventory/test.yml 
+
+PLAY [Print os facts] **************************************************************************************************
+
+TASK [Gathering Facts] *************************************************************************************************
+[WARNING]: Platform darwin on host localhost is using the discovered Python interpreter at
+/Users/20154398/.local/myvenv/bin/python3.12, but future installation of another Python interpreter could change the
+meaning of that path. See https://docs.ansible.com/ansible-core/2.17/reference_appendices/interpreter_discovery.html
+for more information.
+ok: [localhost]
+
+TASK [Print OS] ********************************************************************************************************
+ok: [localhost] => {
+    "msg": "MacOSX"
+}
+
+TASK [Print fact] ******************************************************************************************************
+ok: [localhost] => {
+    "msg": "all default fact"
+}
+
+PLAY RECAP *************************************************************************************************************
+localhost                  : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
