@@ -14,7 +14,11 @@ ARG ANSIBLE_PASSWORD
 ENV ANSIBLE_USERNAME ${ANSIBLE_USERNAME}
 ENV ANSIBLE_PASSWORD ${ANSIBLE_PASSWORD}
 
-RUN useradd "${ANSIBLE_USERNAME}" && \
+RUN --mount=type=secret,id=ansible_pwd \
+    \
+    export ANSIBLE_PASSWORD="$(cat /run/secrets/ansible_pwd)" && \
+    \
+    useradd "${ANSIBLE_USERNAME}" && \
     printf "${ANSIBLE_PASSWORD}\n${ANSIBLE_PASSWORD}" | passwd "${ANSIBLE_USERNAME}" && \
     usermod -aG wheel "${ANSIBLE_USERNAME}" && \
     mkdir -p "/home/${ANSIBLE_USERNAME}" && \

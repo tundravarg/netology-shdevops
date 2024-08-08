@@ -142,6 +142,21 @@ Inventory:
     * `ansible-vault decrypt_string`
         * Потом при применении дешифруем через ключ `--ask-vault-pass` (пароль "vp")
 
+* Используем secrets в Docker:
+    * Прописываем глобальную секцию `secrets`:
+        ```yml
+        secrets:
+            ansible_pwd:
+                file: secrets/ansible-pwd.txt
+        ```
+    * Используем секрет в runtime или build;
+        ```yml
+        secrets:
+            - ansible_pwd
+        ```
+    * Секрет будет примонтирован в `/run/secrets/<secret-name>`
+    * В Dockerfile монтируем так: `RUN --mount=type=secret,id=<secret-name>` и считываем в переменную так: `export SECRET_ENV="$(cat /run/secrets/<secret-name>)".`
+
 
 
 
