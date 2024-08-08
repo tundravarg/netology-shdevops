@@ -131,6 +131,17 @@ Managed node:
     * CentOS: `yum install -y sudo`
     * Create user for Ansible (see: "Cheat sheet" / "Add Ansible user")
 
+Inventory:
+
+* Прописываем переменные для SSH-доступа к управляемым хостам:
+    * ansible_connection: ssh
+    * ansible_user: ansbl
+    * ansible_ssh_pass: password
+
+* Зашифруем пароль:
+    * `ansible-vault decrypt_string`
+        * Потом при применении дешифруем через ключ `--ask-vault-pass` (пароль "vp")
+
 
 
 
