@@ -157,6 +157,48 @@ Inventory:
     * Секрет будет примонтирован в `/run/secrets/<secret-name>`
     * В Dockerfile монтируем так: `RUN --mount=type=secret,id=<secret-name>` и считываем в переменную так: `export SECRET_ENV="$(cat /run/secrets/<secret-name>)".`
 
+Тестируем:
+
+```shell
+docker compose up --build
+#
+docker exec -it ctrl bash
+#
+cd playbook
+ansible-playbook site.yml -i inventory/prod.yml --ask-vault-pass # pass: vp
+```
+
+```
+ansible-playbook site.yml -i inventory/prod.yml --ask-vault-pass
+Vault password: 
+
+PLAY [Print os facts] **************************************************************************************************************************************************************
+
+TASK [Gathering Facts] *************************************************************************************************************************************************************
+ok: [ubuntu]
+ok: [centos7]
+
+TASK [Print OS] ********************************************************************************************************************************************************************
+ok: [centos7] => {
+    "msg": "CentOS"
+}
+ok: [ubuntu] => {
+    "msg": "Ubuntu"
+}
+
+TASK [Print fact] ******************************************************************************************************************************************************************
+ok: [centos7] => {
+    "msg": "el"
+}
+ok: [ubuntu] => {
+    "msg": "deb"
+}
+
+PLAY RECAP *************************************************************************************************************************************************************************
+centos7                    : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+ubuntu                     : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
 
 
 
