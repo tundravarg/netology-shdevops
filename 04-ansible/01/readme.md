@@ -615,3 +615,137 @@ fedora                     : ok=3    changed=0    unreachable=0    failed=0    s
 localhost                  : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
 ubuntu                     : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 ```
+
+
+### Extra Task 5
+
+
+> 5. Напишите скрипт на bash: автоматизируйте поднятие необходимых контейнеров, запуск ansible-playbook и остановку контейнеров.
+
+
+```shell
+#!/bin/bash
+
+docker compose up --build -d &&
+
+cd playbook &&
+ansible-playbook site.yml -i inventory/prod.yml --vault-password-file ../.ansible-vault-pwd &&
+cd .. &&
+
+docker compose down &&
+docker compose rm -f &&
+
+echo "DONE" || { echo "FAIL"; exit 1; }
+```
+
+```
+Tuman $ ./extra-task-5.sh 
+[+] Building 0.8s (29/29) FINISHED                                                                 docker:desktop-linux
+ => [ubuntu internal] load build definition from ubuntu.Dockerfile                                                 0.0s
+ => => transferring dockerfile: 204B                                                                               0.0s
+ => [fedora internal] load build definition from fedora.Dockerfile                                                 0.0s
+ => => transferring dockerfile: 183B                                                                               0.0s
+ => [ubuntu internal] load metadata for docker.io/library/ubuntu:24.10                                             0.0s
+ => [ubuntu internal] load .dockerignore                                                                           0.0s
+ => => transferring context: 2B                                                                                    0.0s
+ => [fedora internal] load metadata for docker.io/library/fedora:40                                                0.7s
+ => [ubuntu 1/5] FROM docker.io/library/ubuntu:24.10                                                               0.0s
+ => [ubuntu internal] load build context                                                                           0.0s
+ => => transferring context: 65B                                                                                   0.0s
+ => [centos7 internal] load build definition from centos7.Dockerfile                                               0.0s
+ => => transferring dockerfile: 366B                                                                               0.0s
+ => CACHED [ubuntu 2/5] RUN apt update -y                                                                          0.0s
+ => CACHED [ubuntu 3/5] RUN apt install -y python3                                                                 0.0s
+ => CACHED [ubuntu 4/5] WORKDIR /init                                                                              0.0s
+ => CACHED [ubuntu 5/5] COPY init.sh ./                                                                            0.0s
+ => [ubuntu] exporting to image                                                                                    0.0s
+ => => exporting layers                                                                                            0.0s
+ => => writing image sha256:337e3c495baed0ed040e73b26c53fe56ae1e43b956cc8fb9769ab2b00b20d0e7                       0.0s
+ => => naming to docker.io/library/ubuntu:0.0.1                                                                    0.0s
+ => [centos7 internal] load metadata for docker.io/library/centos:7                                                0.0s
+ => [centos7 internal] load .dockerignore                                                                          0.0s
+ => => transferring context: 2B                                                                                    0.0s
+ => [centos7 1/5] FROM docker.io/library/centos:7                                                                  0.0s
+ => [centos7 internal] load build context                                                                          0.0s
+ => => transferring context: 65B                                                                                   0.0s
+ => CACHED [centos7 2/5] RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-* &&     sed -i 's|#base  0.0s
+ => CACHED [centos7 3/5] RUN yum install -y python3                                                                0.0s
+ => CACHED [centos7 4/5] WORKDIR /init                                                                             0.0s
+ => CACHED [centos7 5/5] COPY init.sh ./                                                                           0.0s
+ => [centos7] exporting to image                                                                                   0.0s
+ => => exporting layers                                                                                            0.0s
+ => => writing image sha256:45c099f51005b39eff4dd026071fd48ee8ba377ab9edbf7618cc19b852815df8                       0.0s
+ => => naming to docker.io/library/centos:0.0.1                                                                    0.0s
+ => [fedora internal] load .dockerignore                                                                           0.0s
+ => => transferring context: 2B                                                                                    0.0s
+ => [fedora 1/4] FROM docker.io/library/fedora:40@sha256:5ce8497aeea599bf6b54ab3979133923d82aaa4f6ca5ced1812611b1  0.0s
+ => [fedora internal] load build context                                                                           0.0s
+ => => transferring context: 65B                                                                                   0.0s
+ => CACHED [fedora 2/4] RUN yum install -y python3                                                                 0.0s
+ => CACHED [fedora 3/4] WORKDIR /init                                                                              0.0s
+ => CACHED [fedora 4/4] COPY init.sh ./                                                                            0.0s
+ => [fedora] exporting to image                                                                                    0.0s
+ => => exporting layers                                                                                            0.0s
+ => => writing image sha256:256c8a1966dc507eb6a776111cc3618720a336b8b36669b766d8cbac7ae0ac8d                       0.0s
+ => => naming to docker.io/library/fedora:0.0.1                                                                    0.0s
+[+] Running 4/4
+ ✔ Network 01_default  Created                                                                                     0.0s 
+ ✔ Container ubuntu    Started                                                                                     0.0s 
+ ✔ Container fedora    Started                                                                                     0.0s 
+ ✔ Container centos7   Started                                                                                     0.0s 
+[WARNING]: Found both group and host with same name: fedora
+
+PLAY [Print os facts] **************************************************************************************************
+
+TASK [Gathering Facts] *************************************************************************************************
+[WARNING]: Platform darwin on host localhost is using the discovered Python interpreter at
+/Users/20154398/.local/myvenv/bin/python3.12, but future installation of another Python interpreter could change the
+meaning of that path. See https://docs.ansible.com/ansible-core/2.16/reference_appendices/interpreter_discovery.html
+for more information.
+ok: [localhost]
+ok: [ubuntu]
+ok: [fedora]
+ok: [centos7]
+
+TASK [Print OS] ********************************************************************************************************
+ok: [localhost] => {
+    "msg": "MacOSX 14.5 arm64"
+}
+ok: [centos7] => {
+    "msg": "CentOS 7.9 aarch64"
+}
+ok: [ubuntu] => {
+    "msg": "Ubuntu 24.10 aarch64"
+}
+ok: [fedora] => {
+    "msg": "Fedora 40 aarch64"
+}
+
+TASK [Print fact] ******************************************************************************************************
+ok: [centos7] => {
+    "msg": "el default fact"
+}
+ok: [ubuntu] => {
+    "msg": "deb default fact"
+}
+ok: [localhost] => {
+    "msg": "PaSSw0rd"
+}
+ok: [fedora] => {
+    "msg": "fedora default fact"
+}
+
+PLAY RECAP *************************************************************************************************************
+centos7                    : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+fedora                     : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+localhost                  : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+ubuntu                     : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+[+] Running 4/3
+ ✔ Container ubuntu    Removed                                                                                    10.2s 
+ ✔ Container centos7   Removed                                                                                    10.2s 
+ ✔ Container fedora    Removed                                                                                    10.2s 
+ ✔ Network 01_default  Removed                                                                                     0.0s 
+No stopped containers
+DONE
+```
