@@ -17,3 +17,12 @@ services:
       dockerfile: centos7.Dockerfile
     environment:
       MSG: "centos7"
+
+  fedora:
+    container_name: fedora
+    image: fedora:0.0.1
+    build:
+      context: .
+      dockerfile: fedora.Dockerfile
+    environment:
+      MSG: "fedora"

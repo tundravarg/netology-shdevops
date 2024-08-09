@@ -11,3 +11,7 @@
     hosts:
       ubuntu:
         ansible_connection: docker
+  fedora:
+    hosts:
+      fedora:
+        ansible_connection: docker

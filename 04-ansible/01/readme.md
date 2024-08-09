@@ -480,3 +480,138 @@ centos7                    : ok=3    changed=0    unreachable=0    failed=0    s
 localhost                  : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
 ubuntu                     : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 ```
+
+
+### Extra Task 4
+
+
+> 4. Добавьте новую группу хостов `fedora`, самостоятельно придумайте для неё переменную. В качестве образа можно использовать [этот вариант](https://hub.docker.com/r/pycontribs/fedora).
+
+
+```diff
+diff --git a/04-ansible/01/fedora.Dockerfile b/04-ansible/01/fedora.Dockerfile
+new file mode 100644
+index 0000000..dca03b2
+--- /dev/null
++++ b/04-ansible/01/fedora.Dockerfile
+@@ -0,0 +1,9 @@
++FROM fedora:40
++
++RUN yum install -y python3
++
++WORKDIR /init
++
++COPY init.sh ./
++
++CMD [ "bash", "init.sh" ]
+
+diff --git a/04-ansible/01/docker-compose.yml b/04-ansible/01/docker-compose.yml
+index 2d8d8a9..8ad8773 100644
+--- a/04-ansible/01/docker-compose.yml
++++ b/04-ansible/01/docker-compose.yml
+@@ -17,3 +17,12 @@ services:
+       dockerfile: centos7.Dockerfile
+     environment:
+       MSG: "centos7"
++
++  fedora:
++    container_name: fedora
++    image: fedora:0.0.1
++    build:
++      context: .
++      dockerfile: fedora.Dockerfile
++    environment:
++      MSG: "fedora"
+
+diff --git a/04-ansible/01/playbook/inventory/prod.yml b/04-ansible/01/playbook/inventory/prod.yml
+index 3b64a2b..d3397db 100644
+--- a/04-ansible/01/playbook/inventory/prod.yml
++++ b/04-ansible/01/playbook/inventory/prod.yml
+@@ -10,4 +10,8 @@
+   deb:
+     hosts:
+       ubuntu:
++        ansible_connection: docker
++  fedora:
++    hosts:
++      fedora:
+         ansible_connection: docker
+\ No newline at end of file
+
+diff --git a/04-ansible/01/playbook/group_vars/fedora/examp.yml b/04-ansible/01/playbook/group_vars/fedora/examp.yml
+new file mode 100644
+index 0000000..db4e425
+--- /dev/null
++++ b/04-ansible/01/playbook/group_vars/fedora/examp.yml
+@@ -0,0 +1,2 @@
++---
++  some_fact: "fedora default fact"
+\ No newline at end of file
+
+diff --git a/04-ansible/01/playbook/site.yml b/04-ansible/01/playbook/site.yml
+index 2f9930d..ffbd6d3 100644
+--- a/04-ansible/01/playbook/site.yml
++++ b/04-ansible/01/playbook/site.yml
+@@ -4,7 +4,7 @@
+     tasks:
+       - name: Print OS
+         debug:
+-          msg: "{{ ansible_distribution }}"
++          msg: "{{ ansible_distribution }} {{ ansible_distribution_version }} {{ ansible_architecture }}"
+       - name: Print fact
+         debug:
+           msg: "{{ some_fact }}"
+\ No newline at end of file
+```
+
+```
+$ Tuman $ ansible-playbook site.yml -i inventory/prod.yml --ask-vault-pass
+Vault password: 
+[WARNING]: Found both group and host with same name: fedora
+
+PLAY [Print os facts] **************************************************************************************************
+
+TASK [Gathering Facts] *************************************************************************************************
+[WARNING]: Platform darwin on host localhost is using the discovered Python interpreter at
+/Users/20154398/.local/myvenv/bin/python3.12, but future installation of another Python interpreter could change the
+meaning of that path. See https://docs.ansible.com/ansible-core/2.16/reference_appendices/interpreter_discovery.html
+for more information.
+ok: [localhost]
+ok: [ubuntu]
+ok: [fedora]
+ok: [centos7]
+
+TASK [Print OS] ********************************************************************************************************
+ok: [localhost] => {
+    "msg": "MacOSX 14.5 arm64"
+}
+ok: [centos7] => {
+    "msg": "CentOS 7.9 aarch64"
+}
+ok: [ubuntu] => {
+    "msg": "Ubuntu 24.10 aarch64"
+}
+ok: [fedora] => {
+    "msg": "Fedora 40 aarch64"
+}
+
+TASK [Print fact] ******************************************************************************************************
+ok: [centos7] => {
+    "msg": "el default fact"
+}
+ok: [ubuntu] => {
+    "msg": "deb default fact"
+}
+ok: [localhost] => {
+    "msg": "PaSSw0rd"
+}
+ok: [fedora] => {
+    "msg": "fedora default fact"
+}
+
+PLAY RECAP *************************************************************************************************************
+centos7                    : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+fedora                     : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+localhost                  : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+ubuntu                     : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```

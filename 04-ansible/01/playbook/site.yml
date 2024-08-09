@@ -4,7 +4,7 @@
     tasks:
       - name: Print OS
         debug:
-          msg: "{{ ansible_distribution }}"
+          msg: "{{ ansible_distribution }} {{ ansible_distribution_version }} {{ ansible_architecture }}"
       - name: Print fact
         debug:
           msg: "{{ some_fact }}"
