@@ -27,7 +27,10 @@ ansible --version
 ## Основная часть
 
 
-### 1. Попробуйте запустить playbook на окружении из `test.yml`, зафиксируйте значение, которое имеет факт `some_fact` для указанного хоста при выполнении playbook.
+### Task 1
+
+
+> 1. Попробуйте запустить playbook на окружении из `test.yml`, зафиксируйте значение, которое имеет факт `some_fact` для указанного хоста при выполнении playbook.
 
 
 ```shell
@@ -61,7 +64,11 @@ localhost                  : ok=3    changed=0    unreachable=0    failed=0    s
 ```
 
 
-### 2. Найдите файл с переменными (group_vars), в котором задаётся найденное в первом пункте значение, и поменяйте его на all default fact.
+### Task 2
+
+
+> 2. Найдите файл с переменными (group_vars), в котором задаётся найденное в первом пункте значение, и поменяйте его на all default fact.
+
 
 `04-ansible/01/playbook/group_vars/all/examp.yml`:
 
@@ -97,7 +104,10 @@ localhost                  : ok=3    changed=0    unreachable=0    failed=0    s
 ```
 
 
-### 3. Воспользуйтесь подготовленным (используется `docker`) или создайте собственное окружение для проведения дальнейших испытаний.
+### Task 3
+
+
+> 3. Воспользуйтесь подготовленным (используется `docker`) или создайте собственное окружение для проведения дальнейших испытаний.
 
 
 NOTE: В каталоге `ansible-ssh` - вариант развёртывания стенда, где Ansible Control Node и Managed Nodes разворачиваются каждый в своём контейнере и Ansible взаимодействует с ними посредством SSH. Здесь работаем через подключение `docker`.
@@ -120,7 +130,10 @@ deactivate
 ```
 
 
-### 4. Проведите запуск playbook на окружении из `prod.yml`. Зафиксируйте полученные значения `some_fact` для каждого из `managed host`.
+### Task 4
+
+
+> 4. Проведите запуск playbook на окружении из `prod.yml`. Зафиксируйте полученные значения `some_fact` для каждого из `managed host`.
 
 
 Результат запуска playbook:
@@ -156,7 +169,8 @@ ubuntu                     : ok=3    changed=0    unreachable=0    failed=0    s
 ```
 
 
-### 5. Добавьте факты в `group_vars` каждой из групп хостов так, чтобы для `some_fact` получились значения: для `deb` — `deb default fact`, для `el` — `el default fact`.
+### Task 5, 6
+
 
 > 5. Добавьте факты в `group_vars` каждой из групп хостов так, чтобы для `some_fact` получились значения: для `deb` — `deb default fact`, для `el` — `el default fact`.
 > 6.  Повторите запуск playbook на окружении `prod.yml`. Убедитесь, что выдаются корректные значения для всех хостов.
@@ -207,10 +221,12 @@ ubuntu                     : ok=3    changed=0    unreachable=0    failed=0    s
 ```
 
 
-### 7. При помощи `ansible-vault` зашифруйте факты в `group_vars/deb` и `group_vars/el` с паролем `netology`.
+### Task 7, 8
+
 
 > 7. При помощи `ansible-vault` зашифруйте факты в `group_vars/deb` и `group_vars/el` с паролем `netology`.
 > 8. Запустите playbook на окружении `prod.yml`. При запуске `ansible` должен запросить у вас пароль. Убедитесь в работоспособности.
+
 
 ```shell
 ansible-vault encrypt group_vars/deb/examp.yml group_vars/el/examp.yml
@@ -259,7 +275,7 @@ ubuntu                     : ok=3    changed=0    unreachable=0    failed=0    s
 ```
 
 
-### 9. Посмотрите при помощи `ansible-doc` список плагинов для подключения. Выберите подходящий для работы на `control node`.
+### Task 9, 10, 11
 
 
 > 9. Посмотрите при помощи `ansible-doc` список плагинов для подключения. Выберите подходящий для работы на `control node`.
