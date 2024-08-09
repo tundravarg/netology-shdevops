@@ -344,3 +344,53 @@ centos7                    : ok=3    changed=0    unreachable=0    failed=0    s
 localhost                  : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
 ubuntu                     : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 ```
+
+
+
+## Необязательная часть
+
+
+### Extra Task 1
+
+
+> 1. При помощи `ansible-vault` расшифруйте все зашифрованные файлы с переменными.
+
+
+```shell
+Tuman $ ansible-vault decrypt group_vars/deb/examp.yml group_vars/el/examp.yml 
+Vault password: # netology
+Decryption successful
+```
+
+```diff
+diff --git a/04-ansible/01/playbook/group_vars/deb/examp.yml b/04-ansible/01/playbook/group_vars/deb/examp.yml
+index 61f55af..0dd359b 100644
+--- a/04-ansible/01/playbook/group_vars/deb/examp.yml
++++ b/04-ansible/01/playbook/group_vars/deb/examp.yml
+@@ -1,7 +1,2 @@
+-$ANSIBLE_VAULT;1.1;AES256
+-32366336626336363437643830353436376561373763363838613631393562626237333764346563
+-6264613638306266623465343363633532383530383933610a306265333039313363356561386263
+-37326563636664626137666338323839336439373137616565623463343032336338663931633232
+-3030646263323863320a616464343663366635633538373933363161366665323132613331393563
+-34646431363839663964663366613132313163663436633138373532303034336430663663356164
+-6131353938336330336231343132646439316466663635323532
++---
++  some_fact: "deb default fact"
+\ No newline at end of file
+diff --git a/04-ansible/01/playbook/group_vars/el/examp.yml b/04-ansible/01/playbook/group_vars/el/examp.yml
+index 95585c0..dcbf0bc 100644
+--- a/04-ansible/01/playbook/group_vars/el/examp.yml
++++ b/04-ansible/01/playbook/group_vars/el/examp.yml
+@@ -1,7 +1,2 @@
+-$ANSIBLE_VAULT;1.1;AES256
+-34646330336663306561643466326263633834333065386335393739626236613839316334343665
+-3436336563613064383065653231313565393430336434640a396439613863663834666565316338
+-34363931356534366131646333323030336639653561666532333435383134366331633633626165
+-6534643438306237620a396536653238333838333136623736303937616164363762366664396331
+-65393462656564333764363836643933333731626366363866303336356165643765303961663335
+-3939386134316366396534636463636461326661626261306332
++---
++  some_fact: "el default fact"
+\ No newline at end of file
+```
