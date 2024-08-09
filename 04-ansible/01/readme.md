@@ -394,3 +394,89 @@ index 95585c0..dcbf0bc 100644
 +  some_fact: "el default fact"
 \ No newline at end of file
 ```
+
+
+### Extra Task 2, 3
+
+
+> 2. Зашифруйте отдельное значение `PaSSw0rd` для переменной `some_fact` паролем `netology`. Добавьте полученное значение в `group_vars/all/exmp.yml`.
+> 3. Запустите `playbook`, убедитесь, что для нужных хостов применился новый `fact`.
+
+
+```shell
+$ ansible-vault encrypt_string
+New Vault password: # netology
+Confirm New Vault password: # netology
+Reading plaintext input from stdin. (ctrl-d to end input, twice if your content does not already have a newline)
+PaSSw0rd^D
+Encryption successful
+!vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          65316633613461326536303638356335303230306339396363646265373131653533376238626266
+          3062643761633435336330613035366561636339313630650a366434393363366263663064653463
+          37626138613163353436643866333038376565396562656136623065323938626563623962663234
+          3062386339323063320a656539613331356632333864376633326662646661323637313265323833
+          3837
+```
+
+```diff
+diff --git a/04-ansible/01/playbook/group_vars/all/examp.yml b/04-ansible/01/playbook/group_vars/all/examp.yml
+index aae0182..184ba7b 100644
+--- a/04-ansible/01/playbook/group_vars/all/examp.yml
++++ b/04-ansible/01/playbook/group_vars/all/examp.yml
+@@ -1,2 +1,8 @@
+ ---
+-  some_fact: 12
+\ No newline at end of file
++  some_fact: !vault |
++    $ANSIBLE_VAULT;1.1;AES256
++    65316633613461326536303638356335303230306339396363646265373131653533376238626266
++    3062643761633435336330613035366561636339313630650a366434393363366263663064653463
++    37626138613163353436643866333038376565396562656136623065323938626563623962663234
++    3062386339323063320a656539613331356632333864376633326662646661323637313265323833
++    3837
+\ No newline at end of file
+```
+
+```
+Tuman $ ansible-playbook site.yml -i inventory/prod.yml --ask-vault-pass
+Vault password: # netology
+
+PLAY [Print os facts] **************************************************************************************************
+
+TASK [Gathering Facts] *************************************************************************************************
+[WARNING]: Platform darwin on host localhost is using the discovered Python interpreter at
+/Users/20154398/.local/myvenv/bin/python3.12, but future installation of another Python interpreter could change the
+meaning of that path. See https://docs.ansible.com/ansible-core/2.16/reference_appendices/interpreter_discovery.html
+for more information.
+ok: [localhost]
+ok: [ubuntu]
+ok: [centos7]
+
+TASK [Print OS] ********************************************************************************************************
+ok: [localhost] => {
+    "msg": "MacOSX"
+}
+ok: [centos7] => {
+    "msg": "CentOS"
+}
+ok: [ubuntu] => {
+    "msg": "Ubuntu"
+}
+
+TASK [Print fact] ******************************************************************************************************
+ok: [centos7] => {
+    "msg": "el default fact"
+}
+ok: [ubuntu] => {
+    "msg": "deb default fact"
+}
+ok: [localhost] => {
+    "msg": "PaSSw0rd"
+}
+
+PLAY RECAP *************************************************************************************************************
+centos7                    : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+localhost                  : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+ubuntu                     : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
