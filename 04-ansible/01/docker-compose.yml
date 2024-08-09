@@ -1,0 +1,28 @@
+services:
+
+  ubuntu:
+    container_name: ubuntu
+    image: ubuntu:0.0.1
+    build:
+      context: .
+      dockerfile: ubuntu.Dockerfile
+    environment:
+      MSG: "ubuntu"
+
+  centos7:
+    container_name: centos7
+    image: centos:0.0.1
+    build:
+      context: .
+      dockerfile: centos7.Dockerfile
+    environment:
+      MSG: "centos7"
+
+  fedora:
+    container_name: fedora
+    image: fedora:0.0.1
+    build:
+      context: .
+      dockerfile: fedora.Dockerfile
+    environment:
+      MSG: "fedora"

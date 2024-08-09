@@ -15,3 +15,7 @@ tmp/
 .project
 .classpath
 .settings
+
+# Python
+
+.venv
