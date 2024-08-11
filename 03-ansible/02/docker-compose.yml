@@ -1,0 +1,7 @@
+services:
+
+  clickhouse:
+    container_name: clickhouse-01
+    image: ntlg-clickhouse:0.0.1
+    build:
+      context: .

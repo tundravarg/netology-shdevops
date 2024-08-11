@@ -1,4 +1,12 @@
 ---
+- name: Print OS facts
+  tags:
+    - test
+  hosts: clickhouse
+  tasks:
+    - name: Print OS
+      debug:
+        msg: "{{ ansible_distribution }} {{ ansible_distribution_version }} {{ ansible_architecture }}"
 - name: Install Clickhouse
   hosts: clickhouse
   handlers:
