@@ -12,9 +12,10 @@
   handlers:
     - name: Start clickhouse service
       become: true
-      ansible.builtin.service:
-        name: clickhouse-server
-        state: restarted
+      ansible.builtin.command:
+        argv:
+          - clickhouse-server
+          - --daemon
   tasks:
     - block:
         - name: Get clickhouse distrib
@@ -30,6 +31,7 @@
     - name: Install clickhouse packages
       become: true
       ansible.builtin.yum:
+        disable_gpg_check: True
         name:
           - clickhouse-common-static-{{ clickhouse_version }}.rpm
           - clickhouse-client-{{ clickhouse_version }}.rpm
