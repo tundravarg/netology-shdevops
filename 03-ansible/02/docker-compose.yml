@@ -1,7 +1,15 @@
 services:
 
   clickhouse:
-    container_name: clickhouse-01
+    container_name: ntlg-clickhouse
     image: ntlg-clickhouse:0.0.1
     build:
       context: .
+      dockerfile: clickhouse.Dockerfile
+
+  vector:
+    container_name: ntlg-vector
+    image: ntlg-vector:0.0.1
+    build:
+      context: .
+      dockerfile: vector.Dockerfile
