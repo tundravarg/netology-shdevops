@@ -1,11 +1,20 @@
 sources:
-  in:
-    type: "stdin"
+  filein:
+    type: file
+    include:
+      - /var/vector_input.txt
 
 sinks:
-  out:
+  stdout:
     inputs:
-      - "in"
-    type: "console"
+      - filein
+    type: console
     encoding:
-      codec: "text"
+      codec: text
+  fileout:
+    inputs:
+      - filein
+    type: file
+    path: /var/vector_output.txt
+    encoding:
+      codec: text

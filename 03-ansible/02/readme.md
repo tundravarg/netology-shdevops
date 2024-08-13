@@ -322,3 +322,92 @@ Ololo
 Rerere
 Rerere
 ```
+
+
+#### Настройка ввода-вывода Vector
+
+
+Будем вычитывать локальный файл и писать в другой локальный файл.
+
+```yml
+  vector:
+    container_name: ntlg-vector
+    ...
+    volumes:
+      - ${PWD}/vector_input.txt:/var/vector_input.txt
+      - ${PWD}/vector_output.txt:/var/vector_output.txt
+```
+
+`vector.yaml`:
+
+```yml
+sources:
+  filein:
+    type: file
+    include:
+      - /var/vector_input.txt
+
+sinks:
+  stdout:
+    inputs:
+      - filein
+    type: console
+    encoding:
+      codec: text
+  fileout:
+    inputs:
+      - filein
+    type: file
+    path: /var/vector_output.txt
+    encoding:
+      codec: text
+```
+
+Запускаем/перезапускаем Vector при изменениях в ходе выполнения play:
+
+```ymp
+- name: Install Vector
+  ...
+  tasks:
+    ...
+    - name: Install
+      ...
+      notify: Start Vector service
+  handlers:
+    - name: Start Vector service
+      become: true
+      ansible.builtin.shell:
+        cmd: |
+          pkill -9 vector;
+          nohup /opt/vector/bin/vector --watch-config &
+```
+
+После `pkill` стоит `;`, т.к. эта команда возвращает `1`, если ни одного процесса не убито.
+Это не должно влиять на последующий запуск Vector.
+Vector запускается через `nohup` и `&`, чтобы запуститься в фоне и отвязаться от родительского процесса (чтобы не подвешивать Ansible).
+
+Проверяем:
+
+```
+Tuman$ cat vector_input.txt 
+111
+222
+333
+Tuman$ cat vector_output.txt 
+---
+111
+222
+333
+Tuman$ echo hello >> vector_input.txt 
+Tuman$ cat vector_input.txt 
+111
+222
+333
+hello
+Tuman$ cat vector_output.txt 
+---
+111
+222
+333
+hello
+```

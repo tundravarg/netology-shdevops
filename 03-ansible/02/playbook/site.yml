@@ -81,9 +81,7 @@
   handlers:
     - name: Start Vector service
       become: true
-      ansible.builtin.command:
-        argv:
-          - /opt/vector/bin/vector
-          - --watch-config
-        async: true
-    
+      ansible.builtin.shell:
+        cmd: |
+          pkill -9 vector;
+          nohup /opt/vector/bin/vector --watch-config 2>> /var/log/vector.log &
