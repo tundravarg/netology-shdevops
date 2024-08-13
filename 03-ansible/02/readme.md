@@ -200,3 +200,125 @@ clickhouse-01              : ok=7    changed=4    unreachable=0    failed=0    s
 > 2. Допишите playbook: нужно сделать ещё один play, который устанавливает и настраивает [vector](https://vector.dev). Конфигурация vector должна деплоиться через template файл jinja2. От вас не требуется использовать все возможности шаблонизатора, просто вставьте стандартный конфиг в template файл. Информация по шаблонам по [ссылке](https://www.dmosk.ru/instruktions.php?object=ansible-nginx-install). не забудьте сделать handler на перезапуск vector в случае изменения конфигурации!
 > 3. При создании tasks рекомендую использовать модули: `get_url`, `template`, `unarchive`, `file`.
 > 4. Tasks должны: скачать дистрибутив нужной версии, выполнить распаковку в выбранную директорию, установить vector.
+
+
+#### Установка Vector
+
+
+`site.yml`:
+
+```yml
+- name: Install Vector
+  tags:
+    - vector
+  hosts: vector
+  tasks:
+    - name: Download Vector
+      ansible.builtin.get_url:
+        url: https://packages.timber.io/vector/{{ vector_version }}/vector-{{ vector_version }}-x86_64-unknown-linux-gnu.tar.gz
+        dest: ./vector-{{ vector_version }}.tar.gz
+    - name: Unarchive
+      block:
+        - ansible.builtin.unarchive:
+            src: ./vector-{{ vector_version }}.tar.gz
+            remote_src: true
+            dest: "/opt"
+        - ansible.builtin.file:
+            src: /opt/vector-x86_64-unknown-linux-gnu
+            dest: /opt/vector
+            state: link
+        - ansible.builtin.file:
+            path: /etc/vector
+            state: directory
+        - ansible.builtin.file:
+            path: /var/lib/vector
+            state: directory
+        - ansible.builtin.template:
+            src: ./templates/vector.yaml
+            dest: /etc/vector/vector.yaml
+```
+
+Переменные `group_vars/vector/vars.yml`:
+
+```yml
+vector_version: "0.40.0"
+```
+
+Inventory:
+
+```yml
+vector:
+  hosts:
+    ntlg-vector:
+      ansible_connection: docker
+```
+
+Шаблон конфига `vector.yaml`:
+
+```yml
+sources:
+  in:
+    type: "stdin"
+
+sinks:
+  out:
+    inputs:
+      - "in"
+    type: "console"
+    encoding:
+      codec: "text"
+```
+
+Запускаем Ansible:
+
+```
+Tuman $ ansible-playbook site.yml -i inventory/prod.yml -t vector
+
+PLAY [Print OS facts] **************************************************************************************************
+
+PLAY [Install Clickhouse] **********************************************************************************************
+
+PLAY [Install Vector] **************************************************************************************************
+
+TASK [Gathering Facts] *************************************************************************************************
+ok: [ntlg-vector]
+
+TASK [Download Vector] *************************************************************************************************
+changed: [ntlg-vector]
+
+TASK [ansible.builtin.unarchive] ***************************************************************************************
+changed: [ntlg-vector]
+
+TASK [ansible.builtin.file] ********************************************************************************************
+changed: [ntlg-vector]
+
+TASK [ansible.builtin.file] ********************************************************************************************
+changed: [ntlg-vector]
+
+TASK [ansible.builtin.file] ********************************************************************************************
+changed: [ntlg-vector]
+
+TASK [ansible.builtin.template] ****************************************************************************************
+changed: [ntlg-vector]
+
+PLAY RECAP *************************************************************************************************************
+ntlg-vector                : ok=7    changed=6    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
+Тестируем через подключение к контейнеру: `docker exec -it ntlg-vector bash`:
+
+```
+[root@0a28588645b4 ~]# cd /opt/vector/bin/
+[root@0a28588645b4 bin]# ./vector 
+2024-08-13T05:31:09.001394Z  INFO vector::app: Log level is enabled. level="info"
+2024-08-13T05:31:09.002342Z  INFO vector::app: Loading configs. paths=["/etc/vector/vector.yaml"]
+2024-08-13T05:31:09.003473Z  INFO vector::topology::running: Running healthchecks.
+2024-08-13T05:31:09.003469Z  INFO vector::sources::file_descriptors: Capturing stdin.
+2024-08-13T05:31:09.003527Z  INFO vector::topology::builder: Healthcheck passed.
+2024-08-13T05:31:09.003536Z  INFO vector: Vector has started. debug="false" version="0.40.0" arch="x86_64" revision="1167aa9 2024-07-29 15:08:44.028365803"
+2024-08-13T05:31:09.003552Z  INFO vector::app: API is disabled, enable by setting `api.enabled` to `true` and use commands like `vector top`.
+Ololo
+Ololo
+Rerere
+Rerere
+```

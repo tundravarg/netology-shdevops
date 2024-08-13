@@ -10,6 +10,8 @@
         msg: "{{ ansible_distribution }} {{ ansible_distribution_version }} {{ ansible_architecture }}"
 
 - name: Install Clickhouse
+  tags:
+    - clickhouse
   hosts: clickhouse
   handlers:
     - name: Start clickhouse service
@@ -46,3 +48,42 @@
       register: create_db
       failed_when: create_db.rc != 0 and create_db.rc !=82
       changed_when: create_db.rc == 0
+
+- name: Install Vector
+  tags:
+    - vector
+  hosts: vector
+  tasks:
+    - name: Download Vector
+      ansible.builtin.get_url:
+        url: https://packages.timber.io/vector/{{ vector_version }}/vector-{{ vector_version }}-x86_64-unknown-linux-gnu.tar.gz
+        dest: ./vector-{{ vector_version }}.tar.gz
+    - name: Install
+      block:
+        - ansible.builtin.unarchive:
+            src: ./vector-{{ vector_version }}.tar.gz
+            remote_src: true
+            dest: "/opt"
+        - ansible.builtin.file:
+            src: /opt/vector-x86_64-unknown-linux-gnu
+            dest: /opt/vector
+            state: link
+        - ansible.builtin.file:
+            path: /etc/vector
+            state: directory
+        - ansible.builtin.file:
+            path: /var/lib/vector
+            state: directory
+        - ansible.builtin.template:
+            src: ./templates/vector.yaml
+            dest: /etc/vector/vector.yaml
+      notify: Start Vector service
+  handlers:
+    - name: Start Vector service
+      become: true
+      ansible.builtin.command:
+        argv:
+          - /opt/vector/bin/vector
+          - --watch-config
+        async: true
+    
