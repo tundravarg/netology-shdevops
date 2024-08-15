@@ -87,11 +87,7 @@
         - ansible.builtin.template:
             src: ./templates/vector.yaml
             dest: /etc/vector/vector.yaml
-      notify: Start Vector service
-  handlers:
-    - name: Start Vector service
-      become: true
-      ansible.builtin.shell:
-        cmd: |
-          pkill -9 vector;
-          nohup /opt/vector/bin/vector --watch-config 2>> /var/log/vector.log &
+        - ansible.builtin.shell:
+            cmd: |
+              pkill -9 vector;
+              nohup /opt/vector/bin/vector --watch-config 2>> /var/log/vector.log &

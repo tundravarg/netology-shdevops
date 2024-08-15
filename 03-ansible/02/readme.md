@@ -386,6 +386,8 @@ sinks:
 Это не должно влиять на последующий запуск Vector.
 Vector запускается через `nohup` и `&`, чтобы запуститься в фоне и отвязаться от родительского процесса (чтобы не подвешивать Ansible).
 
+NOTE: В итоге сделан запуск Vector через обычную `task` (см. раздел ["Перезапуск Vector при каждом запуске playbook"](#restart-vector))
+
 Проверяем:
 
 ```
@@ -477,4 +479,23 @@ Hello, Clickhouse! I'm Vector.
 
 Tuman$ docker exec ntlg-clickhouse clickhouse client --query 'SELECT * FROM logs.file_log'
 Hello, Clickhouse! I\'m Vector.
+```
+
+
+#### Перезапуск Vector при каждом запуске playbook      <a id="restart-vector"></a>
+
+
+При перезапуске Docker-контейнера, когда никаких изменений в конфигах не происходило, Vector никто не стартует.
+Systemd в контейнере мы не запускаем.
+
+В итоге, секция `handlers` была заменена на обычный `task`, чтобы перезапуск Vector происходил при каждом запуске Ansible.
+
+
+```yml
+block:
+  ...
+  - ansible.builtin.shell:
+      cmd: |
+        pkill -9 vector;
+        nohup /opt/vector/bin/vector --watch-config 2>> /var/log/vector.log &
 ```
