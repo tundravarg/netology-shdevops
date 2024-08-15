@@ -1,0 +1,32 @@
+sources:
+  filein:
+    type: file
+    include:
+      - /var/vector_input.txt
+    read_from: end
+
+sinks:
+  
+  stdout:
+    inputs:
+      - filein
+    type: console
+    encoding:
+      codec: text
+  
+  fileout:
+    inputs:
+      - filein
+    type: file
+    path: /var/vector_output.txt
+    encoding:
+      codec: text
+
+  clickhouse:
+    inputs:
+      - filein
+    type: clickhouse
+    endpoint: http://ntlg-clickhouse:8123
+    database: logs
+    table: file_log
+    skip_unknown_fields: true

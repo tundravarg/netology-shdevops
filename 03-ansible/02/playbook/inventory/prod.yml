@@ -1,0 +1,10 @@
+---
+clickhouse:
+  hosts:
+    ntlg-clickhouse:
+      ansible_connection: docker
+
+vector:
+  hosts:
+    ntlg-vector:
+      ansible_connection: docker

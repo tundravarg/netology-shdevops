@@ -1,0 +1,19 @@
+services:
+
+  clickhouse:
+    container_name: ntlg-clickhouse
+    image: ntlg-clickhouse:0.0.1
+    build:
+      context: .
+      dockerfile: clickhouse.Dockerfile
+
+  vector:
+    container_name: ntlg-vector
+    image: ntlg-vector:0.0.1
+    build:
+      context: .
+      dockerfile: vector.Dockerfile
+    volumes:
+      - ${PWD}/vector_input.txt:/var/vector_input.txt
+      - ${PWD}/vector_output.txt:/var/vector_output.txt
+      - ${PWD}/vector_log.log:/var/log/vector.log
