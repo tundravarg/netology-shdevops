@@ -200,6 +200,7 @@ clickhouse-01              : ok=7    changed=4    unreachable=0    failed=0    s
 > 2. Допишите playbook: нужно сделать ещё один play, который устанавливает и настраивает [vector](https://vector.dev). Конфигурация vector должна деплоиться через template файл jinja2. От вас не требуется использовать все возможности шаблонизатора, просто вставьте стандартный конфиг в template файл. Информация по шаблонам по [ссылке](https://www.dmosk.ru/instruktions.php?object=ansible-nginx-install). не забудьте сделать handler на перезапуск vector в случае изменения конфигурации!
 > 3. При создании tasks рекомендую использовать модули: `get_url`, `template`, `unarchive`, `file`.
 > 4. Tasks должны: скачать дистрибутив нужной версии, выполнить распаковку в выбранную директорию, установить vector.
+> 5. Запустите `ansible-lint site.yml` и исправьте ошибки, если они есть.
 
 
 #### Установка Vector
@@ -498,4 +499,313 @@ block:
       cmd: |
         pkill -9 vector;
         nohup /opt/vector/bin/vector --watch-config 2>> /var/log/vector.log &
+```
+
+
+#### Тестируем playbook
+
+
+> 6. Попробуйте запустить playbook на этом окружении с флагом `--check`.
+
+
+```
+Tuman$ ansible-playbook site.yml -i inventory/prod.yml --check
+
+PLAY [Print OS facts] **************************************************************************************************
+
+TASK [Gathering Facts] *************************************************************************************************
+ok: [ntlg-clickhouse]
+ok: [ntlg-vector]
+
+TASK [Print OS] ********************************************************************************************************
+ok: [ntlg-clickhouse] => {
+    "msg": "Fedora 40 x86_64"
+}
+ok: [ntlg-vector] => {
+    "msg": "Fedora 40 x86_64"
+}
+
+PLAY [Install Clickhouse] **********************************************************************************************
+
+TASK [Gathering Facts] *************************************************************************************************
+ok: [ntlg-clickhouse]
+
+TASK [Get clickhouse distrib] ******************************************************************************************
+changed: [ntlg-clickhouse] => (item=clickhouse-client)
+changed: [ntlg-clickhouse] => (item=clickhouse-server)
+failed: [ntlg-clickhouse] (item=clickhouse-common-static) => {"ansible_loop_var": "item", "changed": false, "dest": "./clickhouse-common-static-22.3.3.44.rpm", "elapsed": 0, "item": "clickhouse-common-static", "msg": "Request failed", "response": "HTTP Error 404: Not Found", "status_code": 404, "url": "https://packages.clickhouse.com/rpm/stable/clickhouse-common-static-22.3.3.44.noarch.rpm"}
+
+TASK [Get clickhouse distrib] ******************************************************************************************
+changed: [ntlg-clickhouse]
+
+TASK [Install clickhouse packages] *************************************************************************************
+An exception occurred during task execution. To see the full traceback, use -vvv. The error was: OSError: Could not open: clickhouse-common-static-22.3.3.44.rpm clickhouse-client-22.3.3.44.rpm clickhouse-server-22.3.3.44.rpm
+fatal: [ntlg-clickhouse]: FAILED! => {"changed": false, "module_stderr": "Traceback (most recent call last):\n  File \"/root/.ansible/tmp/ansible-tmp-1723699183.7362597-118627-10607046888751/AnsiballZ_dnf.py\", line 107, in <module>\n    _ansiballz_main()\n  File \"/root/.ansible/tmp/ansible-tmp-1723699183.7362597-118627-10607046888751/AnsiballZ_dnf.py\", line 99, in _ansiballz_main\n    invoke_module(zipped_mod, temp_path, ANSIBALLZ_PARAMS)\n  File \"/root/.ansible/tmp/ansible-tmp-1723699183.7362597-118627-10607046888751/AnsiballZ_dnf.py\", line 47, in invoke_module\n    runpy.run_module(mod_name='ansible.modules.dnf', init_globals=dict(_module_fqn='ansible.modules.dnf', _modlib_path=modlib_path),\n  File \"<frozen runpy>\", line 226, in run_module\n  File \"<frozen runpy>\", line 98, in _run_module_code\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"/tmp/ansible_ansible.legacy.dnf_payload_u2sjt30l/ansible_ansible.legacy.dnf_payload.zip/ansible/modules/dnf.py\", line 1370, in <module>\n  File \"/tmp/ansible_ansible.legacy.dnf_payload_u2sjt30l/ansible_ansible.legacy.dnf_payload.zip/ansible/modules/dnf.py\", line 1359, in main\n  File \"/tmp/ansible_ansible.legacy.dnf_payload_u2sjt30l/ansible_ansible.legacy.dnf_payload.zip/ansible/modules/dnf.py\", line 1330, in run\n  File \"/tmp/ansible_ansible.legacy.dnf_payload_u2sjt30l/ansible_ansible.legacy.dnf_payload.zip/ansible/modules/dnf.py\", line 975, in ensure\n  File \"/tmp/ansible_ansible.legacy.dnf_payload_u2sjt30l/ansible_ansible.legacy.dnf_payload.zip/ansible/modules/dnf.py\", line 875, in _install_remote_rpms\n  File \"/usr/lib/python3.12/site-packages/dnf/base.py\", line 1343, in add_remote_rpms\n    raise IOError(_(\"Could not open: {}\").format(' '.join(pkgs_error)))\nOSError: Could not open: clickhouse-common-static-22.3.3.44.rpm clickhouse-client-22.3.3.44.rpm clickhouse-server-22.3.3.44.rpm\n", "module_stdout": "", "msg": "MODULE FAILURE\nSee stdout/stderr for the exact error", "rc": 1}
+
+PLAY RECAP *************************************************************************************************************
+ntlg-clickhouse            : ok=4    changed=1    unreachable=0    failed=1    skipped=0    rescued=1    ignored=0   
+ntlg-vector                : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
+Т.к. фактически rpm'ки не скачались, то и их установка провалилась за неимением оных.
+В общем, как и говорилось в лекции.
+
+
+> 7. Запустите playbook на `prod.yml` окружении с флагом `--diff`. Убедитесь, что изменения на системе произведены.
+
+
+```
+Tuman$ ansible-playbook site.yml -i inventory/prod.yml --diff
+
+PLAY [Print OS facts] **************************************************************************************************
+
+TASK [Gathering Facts] *************************************************************************************************
+ok: [ntlg-clickhouse]
+ok: [ntlg-vector]
+
+TASK [Print OS] ********************************************************************************************************
+ok: [ntlg-clickhouse] => {
+    "msg": "Fedora 40 x86_64"
+}
+ok: [ntlg-vector] => {
+    "msg": "Fedora 40 x86_64"
+}
+
+PLAY [Install Clickhouse] **********************************************************************************************
+
+TASK [Gathering Facts] *************************************************************************************************
+ok: [ntlg-clickhouse]
+
+TASK [Get clickhouse distrib] ******************************************************************************************
+changed: [ntlg-clickhouse] => (item=clickhouse-client)
+changed: [ntlg-clickhouse] => (item=clickhouse-server)
+failed: [ntlg-clickhouse] (item=clickhouse-common-static) => {"ansible_loop_var": "item", "changed": false, "dest": "./clickhouse-common-static-22.3.3.44.rpm", "elapsed": 0, "item": "clickhouse-common-static", "msg": "Request failed", "response": "HTTP Error 404: Not Found", "status_code": 404, "url": "https://packages.clickhouse.com/rpm/stable/clickhouse-common-static-22.3.3.44.noarch.rpm"}
+
+TASK [Get clickhouse distrib] ******************************************************************************************
+changed: [ntlg-clickhouse]
+
+TASK [Install clickhouse packages] *************************************************************************************
+changed: [ntlg-clickhouse]
+
+TASK [Configure clickhouse] ********************************************************************************************
+changed: [ntlg-clickhouse]
+
+TASK [Flush handlers] **************************************************************************************************
+
+RUNNING HANDLER [Start clickhouse service] *****************************************************************************
+changed: [ntlg-clickhouse]
+
+TASK [Create database] *************************************************************************************************
+changed: [ntlg-clickhouse]
+
+TASK [Create table] ****************************************************************************************************
+changed: [ntlg-clickhouse]
+
+PLAY [Install Vector] **************************************************************************************************
+
+TASK [Gathering Facts] *************************************************************************************************
+ok: [ntlg-vector]
+
+TASK [Download Vector] *************************************************************************************************
+changed: [ntlg-vector]
+
+TASK [ansible.builtin.unarchive] ***************************************************************************************
+changed: [ntlg-vector]
+
+TASK [ansible.builtin.file] ********************************************************************************************
+--- before
++++ after
+@@ -1,4 +1,4 @@
+ {
+     "path": "/opt/vector",
+-    "state": "absent"
++    "state": "link"
+ }
+
+changed: [ntlg-vector]
+
+TASK [ansible.builtin.file] ********************************************************************************************
+--- before
++++ after
+@@ -1,4 +1,4 @@
+ {
+     "path": "/etc/vector",
+-    "state": "absent"
++    "state": "directory"
+ }
+
+changed: [ntlg-vector]
+
+TASK [ansible.builtin.file] ********************************************************************************************
+--- before
++++ after
+@@ -1,4 +1,4 @@
+ {
+     "path": "/var/lib/vector",
+-    "state": "absent"
++    "state": "directory"
+ }
+
+changed: [ntlg-vector]
+
+TASK [ansible.builtin.template] ****************************************************************************************
+--- before
++++ after: /home/sergey/.ansible/tmp/ansible-local-120116au874vaz/tmpwu2jukii/vector.yaml
+@@ -0,0 +1,32 @@
++sources:
++  filein:
++    type: file
++    include:
++      - /var/vector_input.txt
++    read_from: end
++
++sinks:
++  
++  stdout:
++    inputs:
++      - filein
++    type: console
++    encoding:
++      codec: text
++  
++  fileout:
++    inputs:
++      - filein
++    type: file
++    path: /var/vector_output.txt
++    encoding:
++      codec: text
++
++  clickhouse:
++    inputs:
++      - filein
++    type: clickhouse
++    endpoint: http://ntlg-clickhouse:8123
++    database: logs
++    table: file_log
++    skip_unknown_fields: true
+
+changed: [ntlg-vector]
+
+TASK [ansible.builtin.shell] *******************************************************************************************
+changed: [ntlg-vector]
+
+PLAY RECAP *************************************************************************************************************
+ntlg-clickhouse            : ok=9    changed=6    unreachable=0    failed=0    skipped=0    rescued=1    ignored=0   
+ntlg-vector                : ok=10   changed=7    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
+
+> 8. Повторно запустите playbook с флагом `--diff` и убедитесь, что playbook идемпотентен.
+
+
+```
+Tuman$ ansible-playbook site.yml -i inventory/prod.yml --diff
+
+PLAY [Print OS facts] **************************************************************************************************
+
+TASK [Gathering Facts] *************************************************************************************************
+ok: [ntlg-vector]
+ok: [ntlg-clickhouse]
+
+TASK [Print OS] ********************************************************************************************************
+ok: [ntlg-clickhouse] => {
+    "msg": "Fedora 40 x86_64"
+}
+ok: [ntlg-vector] => {
+    "msg": "Fedora 40 x86_64"
+}
+
+PLAY [Install Clickhouse] **********************************************************************************************
+
+TASK [Gathering Facts] *************************************************************************************************
+ok: [ntlg-clickhouse]
+
+TASK [Get clickhouse distrib] ******************************************************************************************
+ok: [ntlg-clickhouse] => (item=clickhouse-client)
+ok: [ntlg-clickhouse] => (item=clickhouse-server)
+failed: [ntlg-clickhouse] (item=clickhouse-common-static) => {"ansible_loop_var": "item", "changed": false, "dest": "./clickhouse-common-static-22.3.3.44.rpm", "elapsed": 0, "gid": 0, "group": "root", "item": "clickhouse-common-static", "mode": "0644", "msg": "Request failed", "owner": "root", "response": "HTTP Error 404: Not Found", "size": 246310036, "state": "file", "status_code": 404, "uid": 0, "url": "https://packages.clickhouse.com/rpm/stable/clickhouse-common-static-22.3.3.44.noarch.rpm"}
+
+TASK [Get clickhouse distrib] ******************************************************************************************
+ok: [ntlg-clickhouse]
+
+TASK [Install clickhouse packages] *************************************************************************************
+ok: [ntlg-clickhouse]
+
+TASK [Configure clickhouse] ********************************************************************************************
+changed: [ntlg-clickhouse]
+
+TASK [Flush handlers] **************************************************************************************************
+
+RUNNING HANDLER [Start clickhouse service] *****************************************************************************
+changed: [ntlg-clickhouse]
+
+TASK [Create database] *************************************************************************************************
+changed: [ntlg-clickhouse]
+
+TASK [Create table] ****************************************************************************************************
+changed: [ntlg-clickhouse]
+
+PLAY [Install Vector] **************************************************************************************************
+
+TASK [Gathering Facts] *************************************************************************************************
+ok: [ntlg-vector]
+
+TASK [Download Vector] *************************************************************************************************
+ok: [ntlg-vector]
+
+TASK [ansible.builtin.unarchive] ***************************************************************************************
+ok: [ntlg-vector]
+
+TASK [ansible.builtin.file] ********************************************************************************************
+ok: [ntlg-vector]
+
+TASK [ansible.builtin.file] ********************************************************************************************
+ok: [ntlg-vector]
+
+TASK [ansible.builtin.file] ********************************************************************************************
+ok: [ntlg-vector]
+
+TASK [ansible.builtin.template] ****************************************************************************************
+ok: [ntlg-vector]
+
+TASK [ansible.builtin.shell] *******************************************************************************************
+changed: [ntlg-vector]
+
+PLAY RECAP *************************************************************************************************************
+ntlg-clickhouse            : ok=9    changed=4    unreachable=0    failed=0    skipped=0    rescued=1    ignored=0   
+ntlg-vector                : ok=10   changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
+Как видим, есть шаги со статусом `changed`, т.е. playbook "не совсем идемпотентен".
+
+Но, давайте посмотрим, что было `changed`:
+
+* Configure clickhouse [ntlg-clickhouse] - Вызов команды `sed`
+* Start clickhouse service [ntlg-clickhouse] - Запуск Clickhouse (мы запускаем вручную, не через `systemctl`, т.к. в Docker-контейнере)
+* Create database [ntlg-clickhouse] - Запуск команды `clickhouse-client`
+* Create table [ntlg-clickhouse] - Запуск команды `clickhouse-client`
+* ansible.builtin.shell [ntlg-vector] - Перезапуск Vector (мы запускаем вручную, не через `systemctl`, т.к. в Docker-контейнере)
+
+Т.е. видим, что неидемпотентность состоит только в запуске нативных команд.
+
+Если, например поменяем конфиг Vector, то увидим соответствующий diff:
+
+```
+Tuman$ ansible-playbook site.yml -i inventory/prod.yml --diff
+...
+TASK [ansible.builtin.template] ****************************************************************************************
+--- before: /etc/vector/vector.yaml
++++ after: /home/sergey/.ansible/tmp/ansible-local-141407a3mp4za0/tmpgbfutuoc/vector.yaml
+@@ -22,6 +22,7 @@
+     encoding:
+       codec: text
+ 
++  # Integration with Clickhouse
+   clickhouse:
+     inputs:
+       - filein
+
+changed: [ntlg-vector]
+...
 ```
