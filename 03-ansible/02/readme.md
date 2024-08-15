@@ -809,3 +809,12 @@ TASK [ansible.builtin.template] ************************************************
 changed: [ntlg-vector]
 ...
 ```
+
+
+#### Playbook documentation
+
+
+> 9. Подготовьте README.md-файл по своему playbook. В нём должно быть описано: что делает playbook, какие у него есть параметры и теги. Пример качественной документации ansible playbook по [ссылке](https://github.com/opensearch-project/ansible-playbook).
+
+
+См. [readme.md](playbook/readme.md)
