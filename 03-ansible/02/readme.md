@@ -411,3 +411,70 @@ Tuman$ cat vector_output.txt
 333
 hello
 ```
+
+
+#### Интеграция Vector и Clichhouse
+
+
+Создаём таблицу в Clickhouse для хранения логов от Vector:
+
+```yml
+- name: Create table
+  ansible.builtin.command: "clickhouse-client -q 'CREATE TABLE IF NOT EXISTS logs.file_log(message String) ENGINE = MergeTree() ORDER BY tuple();'"
+  register: create_db
+  failed_when: create_db.rc != 0 and create_db.rc !=82
+  changed_when: create_db.rc == 0
+```
+
+Включаем доступ к Clickhouse из-вне:
+
+```yml
+- name: Configure clickhouse
+  become: true
+  ansible.builtin.shell: |
+    sed -i 's/<!-- <listen_host>0.0.0.0<\/listen_host> -->/<listen_host>0.0.0.0<\/listen_host>/g' /etc/clickhouse-server/config.xml
+  notify: Start clickhouse service
+```
+
+Запускаем Clickhouse правильно: с конфигом и от имени пользователя `clickhouse`:
+
+```yml
+handlers:
+  - name: Start clickhouse service
+    become: true
+    ansible.builtin.shell: |
+      chown -R clickhouse:clickhouse /var/lib/clickhouse /var/log/clickhouse-server /etc/clickhouse-server /etc/clickhouse-client
+      sudo -u clickhouse clickhouse server -C /etc/clickhouse-server/config.xml --daemon
+```
+
+Добавляем output в конфигурации Vector:
+
+```yml
+sinks:
+  clickhouse:
+    inputs:
+      - filein
+    type: clickhouse
+    endpoint: http://ntlg-clickhouse:8123
+    database: logs
+    table: file_log
+    skip_unknown_fields: true
+```
+
+Заупскаем и тестируем:
+
+```
+Tuman$ cat vector_output.txt 
+---
+
+Tuman$ docker exec ntlg-clickhouse clickhouse client --query 'SELECT * FROM logs.file_log'
+
+Tuman$ echo "Hello, Clickhouse! I'm Vector." >> vector_input.txt 
+
+Tuman$ cat vector_output.txt 
+---
+Hello, Clickhouse! I'm Vector.
+
+Tuman$ docker exec ntlg-clickhouse clickhouse client --query 'SELECT * FROM logs.file_log'
+Hello, Clickhouse! I\'m Vector.
+```
