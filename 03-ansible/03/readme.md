@@ -1,0 +1,230 @@
+# Домашнее задание к занятию 3 «Использование Ansible»
+
+
+## Yandex Cloud
+
+
+> 1. Подготовьте в Yandex Cloud три хоста: для `clickhouse`, для `vector` и для `lighthouse`.
+
+
+Хосты будем создавать с помощью Terraform.
+Конфигурации находятся в каталоге terraform.
+
+
+### Подготовка
+
+
+Заполняем параметры облака:
+* Создаём файл `personal.auto.tfvars` как копию `personal.auto.tfvars_example`.
+* Заполняем поля `cloud_id` и `folder_id` значениями из UI Yandex Cloud.
+* Получаем и прописываем IAM-токен в поле `token`.
+
+
+#### IAM токен
+
+
+Документация:
+* [Начало работы с интерфейсом командной строки](https://yandex.cloud/ru/docs/cli/quickstart#install)
+* [Получение IAM-токена для сервисного аккаунта](https://yandex.cloud/ru/docs/iam/operations/iam-token/create-for-sa)
+
+Создать или активировать профиль:
+* Список профилей: `yc config profile list`
+* Создание профиля: `yc init`
+    * OAuth-токен получаем по ссылке со страницы докментации [Начало работы с интерфейсом командной строки](https://yandex.cloud/ru/docs/cli/quickstart#install).
+* Активация профиля: `yc config profile activate <profile-name>`
+
+Создать сервисный аккаунт и авторизационный ключ для него:
+* Создать сервисный аккаунт с ролью `admin` в Yandex Cloud (через UI)
+* Создать авторизационный ключ сервисного аккаунта: `yc iam key create --service-account-name <service-account-name> --output key.json`
+* Указать ключ для профиля: `yc config set service-account-key key.json`
+* Удалить сгенерированный файл ключа
+
+Получить IAM-токен:
+* `yc iam create-token`
+
+
+### Конфигурация Terraform
+
+
+Выбираем и прописываем образ ОС:
+* Получение списка публичных образов: `yc compute image list --folder-id standard-images`.
+* Объявляем образ:
+    ```
+    data "yandex_compute_image" "host_image" {
+        family = "debian-12"
+    }
+    ```
+
+SSH-ключи:
+* Генерим SSH-ключ:
+    * В каталоге `ssh`
+    * `ssh-keygen -f admin`
+* В секции `metadata` прописываем SSH-ключ:
+    ```
+    metadata = {
+        serial-port-enable = 1
+        ssh-keys = "admin:${file("../ssh/admin.pub")}"
+    }
+    ```
+    * Не имеет значения, какое имя указано в начале ключа (здесь "admin:").
+        Но какое-то имя указано быть должно обязательно, иначе будет не подключиться к машине.
+        Имя пользователя по умолчанию в каждом дистрибутиве своё (Debian - debian, Ubuntu - ubuntu).
+        Увидеть это имя можно через UI в серийной консоли (поэтому в примере выше и указана опция `serial-port-enable = 1`):
+        ```
+        ci-info: ++++++++++++++++++++++++++++++++++++Authorized keys from /home/debian/.ssh/authorized_keys for user debian++++++++++++++++++++++++++++++++++++
+        ```
+
+NOTE: Здесь приватный и публичный ключи зафиксированы в GIT. Пароль от приватного ключа - "netology".
+
+
+### Запуск Terraform
+
+
+```shell
+terraform help
+terraform init
+terraform validate
+terraform plan
+terraform apply
+terraform destroy
+```
+
+```
+Tuman$ terraform apply
+data.yandex_compute_image.default_image: Reading...
+data.yandex_compute_image.default_image: Read complete after 0s [id=fd8q49fvba72foa1ol22]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # yandex_compute_instance.host["clickhouse"] will be created
+  ...
+
+  # yandex_compute_instance.host["lighthouse"] will be created
+  ...
+
+  # yandex_compute_instance.host["vector"] will be created
+  ...
+
+  # yandex_vpc_network.ntlg-a3 will be created
+  ...
+
+  # yandex_vpc_subnet.ntlg-a3 will be created
+  ...
+
+Plan: 5 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  ...
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+yandex_vpc_network.ntlg-a3: Creating...
+yandex_vpc_network.ntlg-a3: Creation complete after 2s [id=enp93qc6dbgueh7s4cig]
+yandex_vpc_subnet.ntlg-a3: Creating...
+yandex_vpc_subnet.ntlg-a3: Creation complete after 0s [id=e9b9750tba2a87mqusqr]
+yandex_compute_instance.host["vector"]: Creating...
+yandex_compute_instance.host["lighthouse"]: Creating...
+yandex_compute_instance.host["clickhouse"]: Creating...
+yandex_compute_instance.host["vector"]: Still creating... [10s elapsed]
+yandex_compute_instance.host["lighthouse"]: Still creating... [10s elapsed]
+yandex_compute_instance.host["clickhouse"]: Still creating... [10s elapsed]
+yandex_compute_instance.host["lighthouse"]: Still creating... [20s elapsed]
+yandex_compute_instance.host["clickhouse"]: Still creating... [20s elapsed]
+yandex_compute_instance.host["vector"]: Still creating... [20s elapsed]
+yandex_compute_instance.host["lighthouse"]: Still creating... [30s elapsed]
+yandex_compute_instance.host["clickhouse"]: Still creating... [30s elapsed]
+yandex_compute_instance.host["vector"]: Still creating... [30s elapsed]
+yandex_compute_instance.host["vector"]: Creation complete after 40s [id=fhmfa2u0bvhklgigupa7]
+yandex_compute_instance.host["clickhouse"]: Still creating... [40s elapsed]
+yandex_compute_instance.host["lighthouse"]: Still creating... [40s elapsed]
+yandex_compute_instance.host["lighthouse"]: Creation complete after 45s [id=fhmpgcfduuglc10iu8av]
+yandex_compute_instance.host["clickhouse"]: Creation complete after 46s [id=fhmsfm91ieqcf040aj2d]
+
+Apply complete! Resources: 5 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+VMs = [
+  {
+    "fqdn" = "ntlg-a3-clickhouse.ru-central1.internal"
+    "id" = "fhmsfm91ieqcf040aj2d"
+    "name" = "clickhouse"
+    "network" = [
+      {
+        "internal_ip" = "192.168.33.13"
+        "public_ip" = "51.250.14.51"
+      },
+    ]
+  },
+  {
+    "fqdn" = "ntlg-a3-lighthouse.ru-central1.internal"
+    "id" = "fhmpgcfduuglc10iu8av"
+    "name" = "lighthouse"
+    "network" = [
+      {
+        "internal_ip" = "192.168.33.24"
+        "public_ip" = "89.169.146.149"
+      },
+    ]
+  },
+  {
+    "fqdn" = "ntlg-a3-vector.ru-central1.internal"
+    "id" = "fhmfa2u0bvhklgigupa7"
+    "name" = "vector"
+    "network" = [
+      {
+        "internal_ip" = "192.168.33.36"
+        "public_ip" = "89.169.143.157"
+      },
+    ]
+  },
+]
+```
+
+Все три ВМ создались.
+Можем подключиться к любой из них через SSH и выполнить ping другой ВМ.
+
+```
+Tuman$ ssh -i ../ssh/admin debian@89.169.143.157
+The authenticity of host '89.169.143.157 (89.169.143.157)' can't be established.
+ED25519 key fingerprint is SHA256:uLUg3gnDV0DaUmJr3+ULjItxs4Co+aDvMpJjpbGB5Ck.
+This key is not known by any other names
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '89.169.143.157' (ED25519) to the list of known hosts.
+Enter passphrase for key '../ssh/admin': 
+Linux ntlg-a3-vector 6.1.0-11-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.38-4 (2023-08-08) x86_64
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+
+debian@ntlg-a3-vector:~$ ping ntlg-a3-clickhouse
+PING ntlg-a3-clickhouse.ru-central1.internal (192.168.33.13) 56(84) bytes of data.
+64 bytes from ntlg-a3-clickhouse.ru-central1.internal (192.168.33.13): icmp_seq=1 ttl=61 time=0.926 ms
+64 bytes from ntlg-a3-clickhouse.ru-central1.internal (192.168.33.13): icmp_seq=2 ttl=61 time=0.366 ms
+64 bytes from ntlg-a3-clickhouse.ru-central1.internal (192.168.33.13): icmp_seq=3 ttl=61 time=0.401 ms
+^C
+--- ntlg-a3-clickhouse.ru-central1.internal ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2003ms
+rtt min/avg/max/mdev = 0.366/0.564/0.926/0.256 ms
+
+debian@ntlg-a3-vector:~$ ping ntlg-a3-lighthouse
+PING ntlg-a3-lighthouse.ru-central1.internal (192.168.33.24) 56(84) bytes of data.
+64 bytes from ntlg-a3-lighthouse.ru-central1.internal (192.168.33.24): icmp_seq=1 ttl=61 time=0.987 ms
+64 bytes from ntlg-a3-lighthouse.ru-central1.internal (192.168.33.24): icmp_seq=2 ttl=61 time=0.465 ms
+64 bytes from ntlg-a3-lighthouse.ru-central1.internal (192.168.33.24): icmp_seq=3 ttl=61 time=0.412 ms
+^C
+--- ntlg-a3-lighthouse.ru-central1.internal ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2003ms
+rtt min/avg/max/mdev = 0.412/0.621/0.987/0.259 ms
+```
