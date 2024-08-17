@@ -450,3 +450,177 @@ Tuman$ ssh -i ../ssh/admin-nopwd debian@51.250.14.51 "clickhouse-client -q 'SELE
 NOTE: Данных в таблице пока нет, поэтому результат пустой.
     Если указать некорректное название таблицы, то получим ошибку.
     Т.е. видим, что БД сконфигурирована.
+
+
+### Vector
+
+
+[Vector (Oficial Site)](https://vector.dev)
+
+Создаём play для установки, настройки и запуска Vector:
+
+```yml
+- name: Install Vector
+  tags:
+    - vector
+  hosts: vector
+  
+  tasks:
+    - name: Add Vector apt repository
+      ansible.builtin.shell: bash -c "$(curl -L https://setup.vector.dev)"
+    - name: Install Vector
+      become: true
+      ansible.builtin.apt: 
+        update_cache: yes
+        pkg:
+          - vector
+        state: present
+    - name: Configure Vector
+      become: true
+      ansible.builtin.template:
+        src: files/vector/vector.yaml
+        dest: /etc/vector/vector.yaml
+    - name: Create input file
+      become: true
+      ansible.builtin.file:
+        path: /var/vector_input.txt
+        state: touch
+        owner: vector
+        group: vector
+        mode: 666
+    - name: Create output file
+      become: true
+      ansible.builtin.file:
+        path: /var/vector_output.txt
+        state: touch
+        owner: vector
+        group: vector
+        mode: 666
+    - name: Start Vector
+      become: true
+      ansible.builtin.service:
+        name: vector
+        state: restarted
+```
+
+Настраиваем ввод-вывод (`files/vector/vector.yaml`).
+Будем читать файл `/var/vector_input.txt` и писать в `stdout`, `/var/vector_output.txt` и в Clickhouse.
+
+```yml
+sources:
+  filein:
+    type: file
+    include:
+      - /var/vector_input.txt
+    read_from: end
+
+sinks:
+  
+  stdout:
+    inputs:
+      - filein
+    type: console
+    encoding:
+      codec: text
+  
+  fileout:
+    inputs:
+      - filein
+    type: file
+    path: /var/vector_output.txt
+    encoding:
+      codec: text
+
+  clickhouse:
+    inputs:
+      - filein
+    type: clickhouse
+    endpoint: http://ntlg-a3-clickhouse:8123
+    database: logs
+    table: file_log
+    skip_unknown_fields: true
+```
+
+Запускаем play book:
+
+```
+$ ansible-playbook site.yml -i inventory/prod.yml -t vector
+
+PLAY [Print OS facts] **************************************************************************************************
+
+PLAY [Install Clickhouse] **********************************************************************************************
+
+PLAY [Install Vector] **************************************************************************************************
+
+TASK [Gathering Facts] *************************************************************************************************
+ok: [vector]
+
+TASK [Add Vector apt repository] ***************************************************************************************
+changed: [vector]
+
+TASK [Install Vector] **************************************************************************************************
+ok: [vector]
+
+TASK [Configure Vector] ************************************************************************************************
+ok: [vector]
+
+TASK [Create input file] ***********************************************************************************************
+changed: [vector]
+
+TASK [Create output file] **********************************************************************************************
+changed: [vector]
+
+TASK [Start Vector] ****************************************************************************************************
+changed: [vector]
+
+PLAY RECAP *************************************************************************************************************
+vector                     : ok=7    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
+Проверяем:
+
+```
+Tuman$ ssh -i ../ssh/admin-nopwd debian@89.169.143.157
+
+debian@ntlg-a3-vector:~$ sudo service vector status
+● vector.service - Vector
+     Loaded: loaded (/lib/systemd/system/vector.service; disabled; preset: enabled)
+     Active: active (running) since Sat 2024-08-17 17:20:00 UTC; 9min ago
+       Docs: https://vector.dev
+    Process: 12749 ExecStartPre=/usr/bin/vector validate (code=exited, status=0/SUCCESS)
+   Main PID: 12753 (vector)
+      Tasks: 5 (limit: 2303)
+     Memory: 41.4M
+        CPU: 440ms
+     CGroup: /system.slice/vector.service
+             └─12753 /usr/bin/vector
+
+Aug 17 17:21:12 ntlg-a3-vector vector[12753]: 2024-08-17T17:21:12.310075Z ERROR source{component_kind="source" component_id=filein component_type=file}:file_server: vector::inter>
+Aug 17 17:21:14 ntlg-a3-vector vector[12753]: 2024-08-17T17:21:14.359455Z ERROR source{component_kind="source" component_id=filein component_type=file}:file_server: vector::inter>
+Aug 17 17:21:22 ntlg-a3-vector vector[12753]: 2024-08-17T17:21:22.556479Z ERROR source{component_kind="source" component_id=filein component_type=file}:file_server: vector::inter>
+Aug 17 17:21:22 ntlg-a3-vector vector[12753]: 2024-08-17T17:21:22.556505Z ERROR source{component_kind="source" component_id=filein component_type=file}:file_server: vector::inter>
+Aug 17 17:21:24 ntlg-a3-vector vector[12753]: 2024-08-17T17:21:24.605069Z ERROR source{component_kind="source" component_id=filein component_type=file}:file_server: vector::inter>
+Aug 17 17:21:32 ntlg-a3-vector vector[12753]: 2024-08-17T17:21:32.802074Z ERROR source{component_kind="source" component_id=filein component_type=file}:file_server: vector::inter>
+Aug 17 17:21:32 ntlg-a3-vector vector[12753]: 2024-08-17T17:21:32.802104Z ERROR source{component_kind="source" component_id=filein component_type=file}:file_server: vector::inter>
+Aug 17 17:21:34 ntlg-a3-vector vector[12753]: 2024-08-17T17:21:34.851421Z  WARN source{component_kind="source" component_id=filein component_type=file}:file_server: vector::inter>
+Aug 17 17:23:29 ntlg-a3-vector vector[12753]: 2024-08-17T17:23:29.607082Z  INFO source{component_kind="source" component_id=filein component_type=file}:file_server: vector::inter>
+Aug 17 17:23:29 ntlg-a3-vector vector[12753]: 333
+
+debian@ntlg-a3-vector:~$ cat /var/vector_output.txt 
+333
+
+debian@ntlg-a3-vector:~$ echo 'Hello, Vector!' >> /var/vector_input.txt 
+debian@ntlg-a3-vector:~$ cat /var/vector_output.txt 
+333
+Hello, Vector!
+```
+
+И проверям Clickhouse:
+
+```
+Tuman$ ssh -i ../ssh/admin-nopwd debian@51.250.14.51 "clickhouse-client -q 'SELECT * FROM logs.file_log'"
+333
+Hello, Vector!
+```
+
+Всё работает!

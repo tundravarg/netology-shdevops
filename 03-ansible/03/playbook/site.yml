@@ -63,3 +63,45 @@
       register: create_db
       failed_when: create_db.rc != 0 and create_db.rc != 82
       changed_when: create_db.rc == 0
+
+- name: Install Vector
+  tags:
+    - vector
+  hosts: vector
+  
+  tasks:
+    - name: Add Vector apt repository
+      ansible.builtin.shell: bash -c "$(curl -L https://setup.vector.dev)"
+    - name: Install Vector
+      become: true
+      ansible.builtin.apt: 
+        update_cache: yes
+        pkg:
+          - vector
+        state: present
+    - name: Configure Vector
+      become: true
+      ansible.builtin.template:
+        src: files/vector/vector.yaml
+        dest: /etc/vector/vector.yaml
+    - name: Create input file
+      become: true
+      ansible.builtin.file:
+        path: /var/vector_input.txt
+        state: touch
+        owner: vector
+        group: vector
+        mode: 0666
+    - name: Create output file
+      become: true
+      ansible.builtin.file:
+        path: /var/vector_output.txt
+        state: touch
+        owner: vector
+        group: vector
+        mode: 0666
+    - name: Start Vector
+      become: true
+      ansible.builtin.service:
+        name: vector
+        state: restarted
