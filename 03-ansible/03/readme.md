@@ -228,3 +228,88 @@ PING ntlg-a3-lighthouse.ru-central1.internal (192.168.33.24) 56(84) bytes of dat
 3 packets transmitted, 3 received, 0% packet loss, time 2003ms
 rtt min/avg/max/mdev = 0.412/0.621/0.987/0.259 ms
 ```
+
+
+## Ansible
+
+
+> 1. Допишите playbook: нужно сделать ещё один play, который устанавливает и настраивает LightHouse.
+> 2. Репозиторий LightHouse находится [по ссылке](https://github.com/VKCOM/lighthouse).
+> 2. При создании tasks рекомендую использовать модули: `get_url`, `template`, `yum`, `apt`.
+> 3. Tasks должны: скачать статику LightHouse, установить Nginx или любой другой веб-сервер, настроить его конфиг для открытия LightHouse, запустить веб-сервер.
+> 4. Подготовьте свой inventory-файл `prod.yml`.
+
+
+### Подключение к ВМ
+
+
+Создаём inventory и прописываем туда наши ВМ.
+
+```yml
+---
+clickhouse:
+  hosts:
+    clickhouse:
+      ansible_host: 51.250.14.51
+
+lighthouse:
+  hosts:
+    lighthouse:
+      ansible_host: 89.169.146.149
+
+vector:
+  hosts:
+    vector:
+      ansible_host: 89.169.143.157
+```
+
+Параметры подключения по SSH прописываем в `group_vars/all/ssh.yml`.
+Они для всех ВМ одинаковы.
+
+```yml
+ansible_user: debian
+ansible_private_key_file: ../ssh/admin-nopwd
+```
+
+Приватный ключ `ssh/admin` защищён паролем, который Ansible постоянно требует вводить вручную при подключении к каждому хосту.
+Сделаем приватный ключ без пароля `admin-nopwd` с помощью скрипта `unprotect-pk.sh` и добавим его в `.gitignore`, чтобы случайно не закоммитить.
+
+```shell
+#!/bin/sh
+
+SRC_PK=admin
+DST_PK=admin-nopwd
+
+cp ${SRC_PK} ${DST_PK}
+chmod 600 ${DST_PK}
+ssh-keygen -p -f $DST_PK
+```
+
+Запускаем `ansible-playbook`:
+
+```
+Tuman$ ansible-playbook site.yml -i inventory
+
+PLAY [Print OS facts] **************************************************************************************************
+
+TASK [Gathering Facts] *************************************************************************************************
+ok: [vector]
+ok: [clickhouse]
+ok: [lighthouse]
+
+TASK [Print OS] ********************************************************************************************************
+ok: [clickhouse] => {
+    "msg": "Debian 12.6 x86_64"
+}
+ok: [lighthouse] => {
+    "msg": "Debian 12.6 x86_64"
+}
+ok: [vector] => {
+    "msg": "Debian 12.6 x86_64"
+}
+
+PLAY RECAP *************************************************************************************************************
+clickhouse                 : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+lighthouse                 : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+vector                     : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
