@@ -313,3 +313,140 @@ clickhouse                 : ok=2    changed=0    unreachable=0    failed=0    s
 lighthouse                 : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
 vector                     : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 ```
+
+
+### Clickhouse
+
+
+[ClickHouse (Oficial Site)](https://clickhouse.com/)
+
+Создаём play для установки, настройки и запуска Clickhouse:
+
+```yml
+- name: Install Clickhouse
+  tags:
+    - clickhouse
+  hosts: clickhouse
+  
+  tasks:
+    - name: Install common packages
+      become: true
+      ansible.builtin.apt:
+        update_cache: yes
+        pkg:
+          - gpg
+    - name: Add Clickhouse apt-key
+      become: true
+      ansible.builtin.get_url:
+        url: https://packages.clickhouse.com/rpm/lts/repodata/repomd.xml.key
+        dest: /etc/apt/trusted.gpg.d/clickhouse.asc
+        mode: '0644'
+        force: true
+    - name: Add Clickhouse apt repository
+      become: true
+      ansible.builtin.apt_repository: 
+        update_cache: yes
+        repo: deb https://packages.clickhouse.com/deb stable main
+        state: present 
+        filename: clickhouse 
+    - name: Install Clickhouse
+      become: true
+      ansible.builtin.apt: 
+        update_cache: yes
+        pkg:
+          - clickhouse-server
+          - clickhouse-client
+        state: present
+    - name: Configure Clickhouse
+      become: true
+      ansible.builtin.template:
+        src: files/clickhouse/server.yml
+        dest: /etc/clickhouse-server/config.d/server.yml
+    - name: Start Clickhouse server
+      become: true
+      ansible.builtin.service:
+        name: clickhouse-server
+        state: restarted
+    - name: Prepare Clickhouse DB script
+      become: true
+      ansible.builtin.template:
+        src: files/clickhouse/db.sql
+        dest: clickhouse-db.sql
+    - name: Execute Clickhouse DB script
+      ansible.builtin.command: clickhouse-client --queries-file clickhouse-db.sql
+      register: create_db
+      failed_when: create_db.rc != 0 and create_db.rc != 82
+      changed_when: create_db.rc == 0
+```
+
+Для доступа из-вне, прописываем конфиг (`files/clickhouse/server.yml`):
+
+```yml
+listen_host: 0.0.0.0
+```
+
+Создаём БД и таблицу (`files/clickhouse/db.sql`):
+
+```sql
+CREATE DATABASE IF NOT EXISTS logs;
+
+CREATE TABLE IF NOT EXISTS logs.file_log(
+    message String
+)
+ENGINE = MergeTree()
+ORDER BY tuple()
+;
+```
+
+Запускаем play book:
+
+```
+Tuman$ ansible-playbook site.yml -i inventory/prod.yml -t clickhouse
+
+PLAY [Print OS facts] **************************************************************************************************
+
+PLAY [Install Clickhouse] **********************************************************************************************
+
+TASK [Gathering Facts] *************************************************************************************************
+ok: [clickhouse]
+
+TASK [Install common packages] *****************************************************************************************
+ok: [clickhouse]
+
+TASK [Add Clickhouse apt-key] ******************************************************************************************
+ok: [clickhouse]
+
+TASK [Add Clickhouse apt repository] ***********************************************************************************
+ok: [clickhouse]
+
+TASK [Install Clickhouse] **********************************************************************************************
+ok: [clickhouse]
+
+TASK [Configure Clickhouse] ********************************************************************************************
+ok: [clickhouse]
+
+TASK [Start Clickhouse server] *****************************************************************************************
+changed: [clickhouse]
+
+TASK [Prepare Clickhouse DB script] ************************************************************************************
+ok: [clickhouse]
+
+TASK [Execute Clickhouse DB script] ************************************************************************************
+changed: [clickhouse]
+
+PLAY RECAP *************************************************************************************************************
+clickhouse                 : ok=9    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
+Проверяем:
+
+```
+Tuman$ curl 51.250.14.51:8123
+Ok.
+
+Tuman$ ssh -i ../ssh/admin-nopwd debian@51.250.14.51 "clickhouse-client -q 'SELECT * FROM logs.file_log'"
+```
+
+NOTE: Данных в таблице пока нет, поэтому результат пустой.
+    Если указать некорректное название таблицы, то получим ошибку.
+    Т.е. видим, что БД сконфигурирована.
