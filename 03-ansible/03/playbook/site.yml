@@ -6,19 +6,19 @@
   hosts: all
   tasks:
     - name: Print OS
-      debug:
+      ansible.builtin.debug:
         msg: "{{ ansible_distribution }} {{ ansible_distribution_version }} {{ ansible_architecture }}"
 
 - name: Install Clickhouse
   tags:
     - clickhouse
   hosts: clickhouse
-  
+
   tasks:
     - name: Install common packages
       become: true
       ansible.builtin.apt:
-        update_cache: yes
+        update_cache: true
         pkg:
           - gpg
     - name: Add Clickhouse apt-key
@@ -30,15 +30,15 @@
         force: true
     - name: Add Clickhouse apt repository
       become: true
-      ansible.builtin.apt_repository: 
-        update_cache: yes
+      ansible.builtin.apt_repository:
+        update_cache: true
         repo: deb https://packages.clickhouse.com/deb stable main
-        state: present 
-        filename: clickhouse 
+        state: present
+        filename: clickhouse
     - name: Install Clickhouse
       become: true
-      ansible.builtin.apt: 
-        update_cache: yes
+      ansible.builtin.apt:
+        update_cache: true
         pkg:
           - clickhouse-server
           - clickhouse-client
@@ -48,6 +48,7 @@
       ansible.builtin.template:
         src: files/clickhouse/server.yml
         dest: /etc/clickhouse-server/config.d/server.yml
+        mode: '0664'
     - name: Start Clickhouse server
       become: true
       ansible.builtin.service:
@@ -58,6 +59,7 @@
       ansible.builtin.template:
         src: files/clickhouse/db.sql
         dest: clickhouse-db.sql
+        mode: '0664'
     - name: Execute Clickhouse DB script
       ansible.builtin.command: clickhouse-client --queries-file clickhouse-db.sql
       register: create_db
@@ -68,14 +70,17 @@
   tags:
     - vector
   hosts: vector
-  
+
   tasks:
     - name: Add Vector apt repository
       ansible.builtin.shell: bash -c "$(curl -L https://setup.vector.dev)"
+      register: result
+      changed_when: result.rc == 0
+      failed_when: result.rc != 0
     - name: Install Vector
       become: true
-      ansible.builtin.apt: 
-        update_cache: yes
+      ansible.builtin.apt:
+        update_cache: true
         pkg:
           - vector
         state: present
@@ -84,6 +89,7 @@
       ansible.builtin.template:
         src: files/vector/vector.yaml
         dest: /etc/vector/vector.yaml
+        mode: '0664'
     - name: Create input file
       become: true
       ansible.builtin.file:
@@ -91,7 +97,7 @@
         state: touch
         owner: vector
         group: vector
-        mode: 0666
+        mode: '0666'
     - name: Create output file
       become: true
       ansible.builtin.file:
@@ -99,7 +105,7 @@
         state: touch
         owner: vector
         group: vector
-        mode: 0666
+        mode: '0665'
     - name: Start Vector
       become: true
       ansible.builtin.service:
@@ -110,12 +116,12 @@
   tags:
     - lighthouse
   hosts: lighthouse
-  
+
   tasks:
     - name: Install Nginx
       become: true
-      ansible.builtin.apt: 
-        update_cache: yes
+      ansible.builtin.apt:
+        update_cache: true
         pkg:
           - nginx
         state: present
@@ -123,6 +129,7 @@
       ansible.builtin.get_url:
         url: https://github.com/VKCOM/lighthouse/archive/refs/heads/master.zip
         dest: ./lighthouse.zip
+        mode: '0665'
     - name: Unarchive LightHouse
       become: true
       ansible.builtin.unarchive:
@@ -140,6 +147,7 @@
       ansible.builtin.template:
         src: files/lighthouse/lighthouse.conf
         dest: /etc/nginx/conf.d/lighthouse.conf
+        mode: '0664'
       notify: Restart Nginx
 
   handlers:

@@ -198,7 +198,7 @@ ED25519 key fingerprint is SHA256:uLUg3gnDV0DaUmJr3+ULjItxs4Co+aDvMpJjpbGB5Ck.
 This key is not known by any other names
 Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
 Warning: Permanently added '89.169.143.157' (ED25519) to the list of known hosts.
-Enter passphrase for key '../ssh/admin': 
+Enter passphrase for key '../ssh/admin':
 Linux ntlg-a3-vector 6.1.0-11-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.38-4 (2023-08-08) x86_64
 
 The programs included with the Debian GNU/Linux system are free software;
@@ -309,8 +309,8 @@ ok: [vector] => {
 }
 
 PLAY RECAP *************************************************************************************************************
-clickhouse                 : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
-lighthouse                 : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+clickhouse                 : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+lighthouse                 : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 vector                     : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 ```
 
@@ -327,7 +327,7 @@ vector                     : ok=2    changed=0    unreachable=0    failed=0    s
   tags:
     - clickhouse
   hosts: clickhouse
-  
+
   tasks:
     - name: Install common packages
       become: true
@@ -344,14 +344,14 @@ vector                     : ok=2    changed=0    unreachable=0    failed=0    s
         force: true
     - name: Add Clickhouse apt repository
       become: true
-      ansible.builtin.apt_repository: 
+      ansible.builtin.apt_repository:
         update_cache: yes
         repo: deb https://packages.clickhouse.com/deb stable main
-        state: present 
-        filename: clickhouse 
+        state: present
+        filename: clickhouse
     - name: Install Clickhouse
       become: true
-      ansible.builtin.apt: 
+      ansible.builtin.apt:
         update_cache: yes
         pkg:
           - clickhouse-server
@@ -398,7 +398,7 @@ ORDER BY tuple()
 ;
 ```
 
-Запускаем play book:
+Запускаем playbook:
 
 ```
 Tuman$ ansible-playbook site.yml -i inventory/prod.yml -t clickhouse
@@ -464,13 +464,13 @@ NOTE: Данных в таблице пока нет, поэтому резул�
   tags:
     - vector
   hosts: vector
-  
+
   tasks:
     - name: Add Vector apt repository
       ansible.builtin.shell: bash -c "$(curl -L https://setup.vector.dev)"
     - name: Install Vector
       become: true
-      ansible.builtin.apt: 
+      ansible.builtin.apt:
         update_cache: yes
         pkg:
           - vector
@@ -515,14 +515,14 @@ sources:
     read_from: end
 
 sinks:
-  
+
   stdout:
     inputs:
       - filein
     type: console
     encoding:
       codec: text
-  
+
   fileout:
     inputs:
       - filein
@@ -541,7 +541,7 @@ sinks:
     skip_unknown_fields: true
 ```
 
-Запускаем play book:
+Запускаем playbook:
 
 ```
 $ ansible-playbook site.yml -i inventory/prod.yml -t vector
@@ -606,11 +606,11 @@ Aug 17 17:21:34 ntlg-a3-vector vector[12753]: 2024-08-17T17:21:34.851421Z  WARN 
 Aug 17 17:23:29 ntlg-a3-vector vector[12753]: 2024-08-17T17:23:29.607082Z  INFO source{component_kind="source" component_id=filein component_type=file}:file_server: vector::inter>
 Aug 17 17:23:29 ntlg-a3-vector vector[12753]: 333
 
-debian@ntlg-a3-vector:~$ cat /var/vector_output.txt 
+debian@ntlg-a3-vector:~$ cat /var/vector_output.txt
 333
 
-debian@ntlg-a3-vector:~$ echo 'Hello, Vector!' >> /var/vector_input.txt 
-debian@ntlg-a3-vector:~$ cat /var/vector_output.txt 
+debian@ntlg-a3-vector:~$ echo 'Hello, Vector!' >> /var/vector_input.txt
+debian@ntlg-a3-vector:~$ cat /var/vector_output.txt
 333
 Hello, Vector!
 ```
@@ -639,11 +639,11 @@ Hello, Vector!
   tags:
     - lighthouse
   hosts: lighthouse
-  
+
   tasks:
     - name: Install Nginx
       become: true
-      ansible.builtin.apt: 
+      ansible.builtin.apt:
         update_cache: yes
         pkg:
           - nginx
@@ -701,7 +701,7 @@ NOTE: Доменное имя `lighthouse.ntlg.tumanser.ru` здесь прос�
     IP-адрес ВМ к нему не привязан.
     Но и это ДЗ не про эту тему.
 
-Запускаем play book:
+Запускаем playbook:
 
 ```
 Tuman$ ansible-playbook site.yml -i inventory/prod.yml -t lighthouse
@@ -752,14 +752,301 @@ Tuman$ yc compute instance list
 ```
 Tuman$ ssh -i ssh/admin-nopwd debian@89.169.135.213
 
-debian@ntlg-a3-vector:~$ cat /var/vector_output.txt 
-debian@ntlg-a3-vector:~$ echo 'Ololo' >> /var/vector_input.txt 
-debian@ntlg-a3-vector:~$ cat /var/vector_output.txt 
+debian@ntlg-a3-vector:~$ cat /var/vector_output.txt
+debian@ntlg-a3-vector:~$ echo 'Ololo' >> /var/vector_input.txt
+debian@ntlg-a3-vector:~$ cat /var/vector_output.txt
 Ololo
-debian@ntlg-a3-vector:~$ echo 'Rerere' >> /var/vector_input.txt 
-debian@ntlg-a3-vector:~$ cat /var/vector_output.txt 
+debian@ntlg-a3-vector:~$ echo 'Rerere' >> /var/vector_input.txt
+debian@ntlg-a3-vector:~$ cat /var/vector_output.txt
 Ololo
 Rerere
 ```
 
 !["file-log" table in LightHouse](files/lighthouse_file-log.jpg)
+
+
+### Проверка playbook
+
+
+> 5. Запустите `ansible-lint site.yml` и исправьте ошибки, если они есть.
+> 6. Попробуйте запустить playbook на этом окружении с флагом `--check`.
+> 7. Запустите playbook на `prod.yml` окружении с флагом `--diff`. Убедитесь, что изменения на системе произведены.
+> 8. Повторно запустите playbook с флагом `--diff` и убедитесь, что playbook идемпотентен.
+
+Устанавливаем `ansible-dev-tools`, который в своём составе содержит `ansible-lit` и другие инструменты, которые могут понадобиться в следующих заданиях.
+
+```shell
+pip3 install ansible-dev-tools
+ansible-lint --version
+```
+
+Запускаем `ansible-lint`:
+
+```
+$ ansible-lint site.yml
+WARNING  Listing 23 violation(s) that are fatal
+fqcn[action-core]: Use FQCN for builtin module actions (debug).
+site.yml:8 Use `ansible.builtin.debug` or `ansible.legacy.debug` instead.
+
+yaml[trailing-spaces]: Trailing spaces
+site.yml:16
+
+yaml[truthy]: Truthy value should be one of [false, true]
+site.yml:21
+
+yaml[trailing-spaces]: Trailing spaces
+site.yml:33
+
+yaml[truthy]: Truthy value should be one of [false, true]
+site.yml:34
+
+yaml[trailing-spaces]: Trailing spaces
+site.yml:36
+
+yaml[trailing-spaces]: Trailing spaces
+site.yml:37
+
+yaml[trailing-spaces]: Trailing spaces
+site.yml:40
+
+yaml[truthy]: Truthy value should be one of [false, true]
+site.yml:41
+
+risky-file-permissions: File permissions unset or incorrect.
+site.yml:46 Task/Handler: Configure Clickhouse
+
+risky-file-permissions: File permissions unset or incorrect.
+site.yml:56 Task/Handler: Prepare Clickhouse DB script
+
+yaml[trailing-spaces]: Trailing spaces
+site.yml:71
+
+no-changed-when: Commands should not change things if nothing needs doing.
+site.yml:73 Task/Handler: Add Vector apt repository
+
+yaml[trailing-spaces]: Trailing spaces
+site.yml:77
+
+yaml[truthy]: Truthy value should be one of [false, true]
+site.yml:78
+
+risky-file-permissions: File permissions unset or incorrect.
+site.yml:82 Task/Handler: Configure Vector
+
+yaml[octal-values]: Forbidden implicit octal value "0666"
+site.yml:94
+
+yaml[octal-values]: Forbidden implicit octal value "0666"
+site.yml:102
+
+yaml[trailing-spaces]: Trailing spaces
+site.yml:113
+
+yaml[trailing-spaces]: Trailing spaces
+site.yml:117
+
+yaml[truthy]: Truthy value should be one of [false, true]
+site.yml:118
+
+risky-file-permissions: File permissions unset or incorrect.
+site.yml:122 Task/Handler: Download LightHouse
+
+risky-file-permissions: File permissions unset or incorrect.
+site.yml:138 Task/Handler: Setup LightHouse in Nginx
+
+Read documentation for instructions on how to ignore specific rule violations.
+
+                       Rule Violation Summary
+ count tag                    profile    rule associated tags
+     2 yaml[octal-values]     basic      formatting, yaml
+     9 yaml[trailing-spaces]  basic      formatting, yaml
+     5 yaml[truthy]           basic      formatting, yaml
+     5 risky-file-permissions safety     unpredictability
+     1 no-changed-when        shared     command-shell, idempotency
+     1 fqcn[action-core]      production formatting
+
+Failed: 23 failure(s), 0 warning(s) on 1 files. Last profile that met the validation criteria was 'min'.
+```
+
+Исправляем:
+
+```diff
+diff --git a/03-ansible/03/playbook/site.yml b/03-ansible/03/playbook/site.yml
+index 83e748c..54da327 100755
+--- a/03-ansible/03/playbook/site.yml
++++ b/03-ansible/03/playbook/site.yml
+@@ -6,19 +6,19 @@
+   hosts: all
+   tasks:
+     - name: Print OS
+-      debug:
++      ansible.builtin.debug:
+         msg: "{{ ansible_distribution }} {{ ansible_distribution_version }} {{ ansible_architecture }}"
+
+ - name: Install Clickhouse
+   tags:
+     - clickhouse
+   hosts: clickhouse
+-
++
+   tasks:
+     - name: Install common packages
+       become: true
+       ansible.builtin.apt:
+-        update_cache: yes
++        update_cache: true
+         pkg:
+           - gpg
+     - name: Add Clickhouse apt-key
+@@ -30,15 +30,15 @@
+         force: true
+     - name: Add Clickhouse apt repository
+       become: true
+-      ansible.builtin.apt_repository:
+-        update_cache: yes
++      ansible.builtin.apt_repository:
++        update_cache: true
+         repo: deb https://packages.clickhouse.com/deb stable main
+-        state: present
+-        filename: clickhouse
++        state: present
++        filename: clickhouse
+     - name: Install Clickhouse
+       become: true
+-      ansible.builtin.apt:
+-        update_cache: yes
++      ansible.builtin.apt:
++        update_cache: true
+         pkg:
+           - clickhouse-server
+           - clickhouse-client
+@@ -48,6 +48,7 @@
+       ansible.builtin.template:
+         src: files/clickhouse/server.yml
+         dest: /etc/clickhouse-server/config.d/server.yml
++        mode: '0664'
+     - name: Start Clickhouse server
+       become: true
+       ansible.builtin.service:
+@@ -58,6 +59,7 @@
+       ansible.builtin.template:
+         src: files/clickhouse/db.sql
+         dest: clickhouse-db.sql
++        mode: '0664'
+     - name: Execute Clickhouse DB script
+       ansible.builtin.command: clickhouse-client --queries-file clickhouse-db.sql
+       register: create_db
+@@ -68,14 +70,17 @@
+   tags:
+     - vector
+   hosts: vector
+-
++
+   tasks:
+     - name: Add Vector apt repository
+       ansible.builtin.shell: bash -c "$(curl -L https://setup.vector.dev)"
++      register: result
++      changed_when: result.rc == 0
++      failed_when: result.rc != 0
+     - name: Install Vector
+       become: true
+-      ansible.builtin.apt:
+-        update_cache: yes
++      ansible.builtin.apt:
++        update_cache: true
+         pkg:
+           - vector
+         state: present
+@@ -84,6 +89,7 @@
+       ansible.builtin.template:
+         src: files/vector/vector.yaml
+         dest: /etc/vector/vector.yaml
++        mode: '0664'
+     - name: Create input file
+       become: true
+       ansible.builtin.file:
+@@ -91,7 +97,7 @@
+         state: touch
+         owner: vector
+         group: vector
+-        mode: 0666
++        mode: '0666'
+     - name: Create output file
+       become: true
+       ansible.builtin.file:
+@@ -99,7 +105,7 @@
+         state: touch
+         owner: vector
+         group: vector
+-        mode: 0666
++        mode: '0665'
+     - name: Start Vector
+       become: true
+       ansible.builtin.service:
+@@ -110,12 +116,12 @@
+   tags:
+     - lighthouse
+   hosts: lighthouse
+-
++
+   tasks:
+     - name: Install Nginx
+       become: true
+-      ansible.builtin.apt:
+-        update_cache: yes
++      ansible.builtin.apt:
++        update_cache: true
+         pkg:
+           - nginx
+         state: present
+@@ -123,6 +129,7 @@
+       ansible.builtin.get_url:
+         url: https://github.com/VKCOM/lighthouse/archive/refs/heads/master.zip
+         dest: ./lighthouse.zip
++        mode: '0665'
+     - name: Unarchive LightHouse
+       become: true
+       ansible.builtin.unarchive:
+@@ -140,6 +147,7 @@
+       ansible.builtin.template:
+         src: files/lighthouse/lighthouse.conf
+         dest: /etc/nginx/conf.d/lighthouse.conf
++        mode: '0664'
+       notify: Restart Nginx
+
+   handlers:
+```
+
+Проверяем:
+
+```
+Tuman$ ansible-lint site.yml
+
+Passed: 0 failure(s), 0 warning(s) on 1 files. Last profile that met the validation criteria was 'production'.
+```
+
+```
+Tuman$ ansible-playbook site.yml -i inventory/prod.yml
+
+...
+
+PLAY RECAP *************************************************************************************************************
+clickhouse                 : ok=11   changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+lighthouse                 : ok=9    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+vector                     : ok=9    changed=5    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
+Проверяем, что ничего не сломалось:
+
+```
+debian@ntlg-a3-vector:~$ cat /var/vector_output.txt
+Ololo
+Rerere
+debian@ntlg-a3-vector:~$ echo '111' >> /var/vector_input.txt
+debian@ntlg-a3-vector:~$ cat /var/vector_output.txt
+Ololo
+Rerere
+111
+```
+
+!["file-log" table in LightHouse](files/lighthouse_file-log-2.jpg)
