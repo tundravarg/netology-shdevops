@@ -105,3 +105,46 @@
       ansible.builtin.service:
         name: vector
         state: restarted
+
+- name: Install LightHouse
+  tags:
+    - lighthouse
+  hosts: lighthouse
+  
+  tasks:
+    - name: Install Nginx
+      become: true
+      ansible.builtin.apt: 
+        update_cache: yes
+        pkg:
+          - nginx
+        state: present
+    - name: Download LightHouse
+      ansible.builtin.get_url:
+        url: https://github.com/VKCOM/lighthouse/archive/refs/heads/master.zip
+        dest: ./lighthouse.zip
+    - name: Unarchive LightHouse
+      become: true
+      ansible.builtin.unarchive:
+        src: ./lighthouse.zip
+        remote_src: true
+        dest: "/opt"
+    - name: Create LightHouse symlink
+      become: true
+      ansible.builtin.file:
+        src: /opt/lighthouse-master
+        dest: /opt/lighthouse
+        state: link
+    - name: Setup LightHouse in Nginx
+      become: true
+      ansible.builtin.template:
+        src: files/lighthouse/lighthouse.conf
+        dest: /etc/nginx/conf.d/lighthouse.conf
+      notify: Restart Nginx
+
+  handlers:
+    - name: Restart Nginx
+      become: true
+      ansible.builtin.service:
+        name: nginx
+        state: restarted

@@ -624,3 +624,142 @@ Hello, Vector!
 ```
 
 Всё работает!
+
+
+### LightHouse
+
+
+[LightHouse (Oficial Site)](https://github.com/VKCOM/lighthouse)
+
+
+Создаём play для установки, настройки и запуска LightHouse:
+
+```yml
+- name: Install LightHouse
+  tags:
+    - lighthouse
+  hosts: lighthouse
+  
+  tasks:
+    - name: Install Nginx
+      become: true
+      ansible.builtin.apt: 
+        update_cache: yes
+        pkg:
+          - nginx
+        state: present
+    - name: Download LightHouse
+      ansible.builtin.get_url:
+        url: https://github.com/VKCOM/lighthouse/archive/refs/heads/master.zip
+        dest: ./lighthouse.zip
+    - name: Unarchive LightHouse
+      become: true
+      ansible.builtin.unarchive:
+        src: ./lighthouse.zip
+        remote_src: true
+        dest: "/opt"
+    - name: Create LightHouse symlink
+      become: true
+      ansible.builtin.file:
+        src: /opt/lighthouse-master
+        dest: /opt/lighthouse
+        state: link
+    - name: Setup LightHouse in Nginx
+      become: true
+      ansible.builtin.template:
+        src: files/lighthouse/lighthouse.conf
+        dest: /etc/nginx/conf.d/lighthouse.conf
+      notify: Restart Nginx
+
+  handlers:
+    - name: Restart Nginx
+      become: true
+      ansible.builtin.service:
+        name: nginx
+        state: restarted
+```
+
+Настройки для LightHouse в Nginx оформляем, как шаблон (`files/lighthouse/lighthouse.conf`):
+
+```
+server {
+	listen 8123;
+	listen [::]:8123;
+
+	server_name lighthouse.ntlg.tumanser.ru;
+
+	root /opt/lighthouse;
+	index index.html;
+
+	location / {
+		try_files $uri $uri/ =404;
+	}
+}
+```
+
+NOTE: Доменное имя `lighthouse.ntlg.tumanser.ru` здесь просто "для красоты".
+    IP-адрес ВМ к нему не привязан.
+    Но и это ДЗ не про эту тему.
+
+Запускаем play book:
+
+```
+Tuman$ ansible-playbook site.yml -i inventory/prod.yml -t lighthouse
+
+PLAY [Print OS facts] **************************************************************************************************
+
+PLAY [Install Clickhouse] **********************************************************************************************
+
+PLAY [Install Vector] **************************************************************************************************
+
+PLAY [Install LightHouse] **********************************************************************************************
+
+TASK [Gathering Facts] *************************************************************************************************
+ok: [lighthouse]
+
+TASK [Install Nginx] ***************************************************************************************************
+ok: [lighthouse]
+
+TASK [Download LightHouse] *********************************************************************************************
+ok: [lighthouse]
+
+TASK [Unarchive LightHouse] ********************************************************************************************
+ok: [lighthouse]
+
+TASK [Create LightHouse symlink] ***************************************************************************************
+ok: [lighthouse]
+
+TASK [Setup LightHouse in Nginx] ***************************************************************************************
+ok: [lighthouse]
+
+PLAY RECAP *************************************************************************************************************
+lighthouse                 : ok=6    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+
+Проверяем:
+
+```
+Tuman$ yc compute instance list
++----------------------+------------+---------------+---------+----------------+---------------+
+|          ID          |    NAME    |    ZONE ID    | STATUS  |  EXTERNAL IP   |  INTERNAL IP  |
++----------------------+------------+---------------+---------+----------------+---------------+
+| fhmea28gupfr41ternce | clickhouse | ru-central1-a | RUNNING | 89.169.129.127 | 192.168.33.14 |
+| fhmkgb42qhpc5fk6167u | lighthouse | ru-central1-a | RUNNING | 89.169.132.227 | 192.168.33.32 |
+| fhmpd3j55qmsjsicple9 | vector     | ru-central1-a | RUNNING | 89.169.135.213 | 192.168.33.13 |
++----------------------+------------+---------------+---------+----------------+---------------+
+```
+
+```
+Tuman$ ssh -i ssh/admin-nopwd debian@89.169.135.213
+
+debian@ntlg-a3-vector:~$ cat /var/vector_output.txt 
+debian@ntlg-a3-vector:~$ echo 'Ololo' >> /var/vector_input.txt 
+debian@ntlg-a3-vector:~$ cat /var/vector_output.txt 
+Ololo
+debian@ntlg-a3-vector:~$ echo 'Rerere' >> /var/vector_input.txt 
+debian@ntlg-a3-vector:~$ cat /var/vector_output.txt 
+Ololo
+Rerere
+```
+
+!["file-log" table in LightHouse](files/lighthouse_file-log.jpg)
