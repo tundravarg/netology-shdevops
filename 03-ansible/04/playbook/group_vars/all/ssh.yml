@@ -1,0 +1,3 @@
+---
+ansible_user: debian
+ansible_private_key_file: ../ssh/admin-nopwd

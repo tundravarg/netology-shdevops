@@ -1,0 +1,158 @@
+---
+
+- name: Print OS facts
+  tags:
+    - test
+  hosts: all
+  tasks:
+    - name: Print OS
+      ansible.builtin.debug:
+        msg: "{{ ansible_distribution }} {{ ansible_distribution_version }} {{ ansible_architecture }}"
+
+- name: Install Clickhouse
+  tags:
+    - clickhouse
+  hosts: clickhouse
+
+  tasks:
+    - name: Install common packages
+      become: true
+      ansible.builtin.apt:
+        update_cache: true
+        pkg:
+          - gpg
+    - name: Add Clickhouse apt-key
+      become: true
+      ansible.builtin.get_url:
+        url: https://packages.clickhouse.com/rpm/lts/repodata/repomd.xml.key
+        dest: /etc/apt/trusted.gpg.d/clickhouse.asc
+        mode: '0644'
+        force: true
+    - name: Add Clickhouse apt repository
+      become: true
+      ansible.builtin.apt_repository:
+        update_cache: true
+        repo: deb https://packages.clickhouse.com/deb stable main
+        state: present
+        filename: clickhouse
+    - name: Install Clickhouse
+      become: true
+      ansible.builtin.apt:
+        update_cache: true
+        pkg:
+          - clickhouse-server
+          - clickhouse-client
+        state: present
+    - name: Configure Clickhouse
+      become: true
+      ansible.builtin.template:
+        src: files/clickhouse/server.yml
+        dest: /etc/clickhouse-server/config.d/server.yml
+        mode: '0664'
+    - name: Start Clickhouse server
+      become: true
+      ansible.builtin.service:
+        name: clickhouse-server
+        state: restarted
+    - name: Prepare Clickhouse DB script
+      become: true
+      ansible.builtin.template:
+        src: files/clickhouse/db.sql
+        dest: clickhouse-db.sql
+        mode: '0664'
+    - name: Execute Clickhouse DB script
+      ansible.builtin.command: clickhouse-client --queries-file clickhouse-db.sql
+      register: create_db
+      failed_when: create_db.rc != 0 and create_db.rc != 82
+      changed_when: create_db.rc == 0
+
+- name: Install Vector
+  tags:
+    - vector
+  hosts: vector
+
+  tasks:
+    - name: Add Vector apt repository
+      ansible.builtin.shell: bash -c "$(curl -L https://setup.vector.dev)"
+      register: result
+      changed_when: result.rc == 0
+      failed_when: result.rc != 0
+    - name: Install Vector
+      become: true
+      ansible.builtin.apt:
+        update_cache: true
+        pkg:
+          - vector
+        state: present
+    - name: Configure Vector
+      become: true
+      ansible.builtin.template:
+        src: files/vector/vector.yaml
+        dest: /etc/vector/vector.yaml
+        mode: '0664'
+    - name: Create input file
+      become: true
+      ansible.builtin.file:
+        path: /var/vector_input.txt
+        state: touch
+        owner: vector
+        group: vector
+        mode: '0666'
+    - name: Create output file
+      become: true
+      ansible.builtin.file:
+        path: /var/vector_output.txt
+        state: touch
+        owner: vector
+        group: vector
+        mode: '0665'
+    - name: Start Vector
+      become: true
+      ansible.builtin.service:
+        name: vector
+        state: restarted
+
+- name: Install LightHouse
+  tags:
+    - lighthouse
+  hosts: lighthouse
+
+  tasks:
+    - name: Install Nginx
+      become: true
+      ansible.builtin.apt:
+        update_cache: true
+        pkg:
+          - nginx
+        state: present
+    - name: Download LightHouse
+      ansible.builtin.get_url:
+        url: https://github.com/VKCOM/lighthouse/archive/refs/heads/master.zip
+        dest: ./lighthouse.zip
+        mode: '0665'
+    - name: Unarchive LightHouse
+      become: true
+      ansible.builtin.unarchive:
+        src: ./lighthouse.zip
+        remote_src: true
+        dest: "/opt"
+    - name: Create LightHouse symlink
+      become: true
+      ansible.builtin.file:
+        src: /opt/lighthouse-master
+        dest: /opt/lighthouse
+        state: link
+    - name: Setup LightHouse in Nginx
+      become: true
+      ansible.builtin.template:
+        src: files/lighthouse/lighthouse.conf
+        dest: /etc/nginx/conf.d/lighthouse.conf
+        mode: '0664'
+      notify: Restart Nginx
+
+  handlers:
+    - name: Restart Nginx
+      become: true
+      ansible.builtin.service:
+        name: nginx
+        state: restarted
