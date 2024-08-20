@@ -1,6 +1,11 @@
+variable "project_name" {
+    type = string
+    default = "ntlg-a4"
+}
+
 variable "vm_params" {
-    type = map(object({ 
-        cpu = number, 
+    type = map(object({
+        cpu = number,
         ram = number,
         disk_volume = number
     }))
@@ -29,22 +34,22 @@ data "yandex_compute_image" "default_image" {
 }
 
 
-resource "yandex_vpc_network" "ntlg-a3" {
-  name = "ntlg-a3"
+resource "yandex_vpc_network" "main-network" {
+  name = var.project_name
 }
 
-resource "yandex_vpc_subnet" "ntlg-a3" {
-  name           = "ntlg-a3"
+resource "yandex_vpc_subnet" "main-subnet" {
+  name           = var.project_name
   zone           = var.default_zone
-  network_id     = yandex_vpc_network.ntlg-a3.id
-  v4_cidr_blocks = ["192.168.33.0/24"]
+  network_id     = yandex_vpc_network.main-network.id
+  v4_cidr_blocks = ["192.168.34.0/24"]
 }
 
 resource "yandex_compute_instance" "host" {
     for_each = var.vm_params
 
-    name = "${each.key}"
-    hostname = "ntlg-a3-${each.key}"
+    name = "${var.project_name}-${each.key}"
+    hostname = "${var.project_name}-${each.key}"
     platform_id = "standard-v3"
     resources {
         cores = each.value.cpu
@@ -61,7 +66,7 @@ resource "yandex_compute_instance" "host" {
         }
     }
     network_interface {
-        subnet_id = yandex_vpc_subnet.ntlg-a3.id
+        subnet_id = yandex_vpc_subnet.main-subnet.id
         nat = true
     }
     metadata = {

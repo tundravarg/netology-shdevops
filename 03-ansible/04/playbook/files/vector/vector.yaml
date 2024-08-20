@@ -6,14 +6,14 @@ sources:
     read_from: end
 
 sinks:
-  
+
   stdout:
     inputs:
       - filein
     type: console
     encoding:
       codec: text
-  
+
   fileout:
     inputs:
       - filein
@@ -26,7 +26,7 @@ sinks:
     inputs:
       - filein
     type: clickhouse
-    endpoint: http://ntlg-a3-clickhouse:8123
+    endpoint: http://{{ hostvars.clickhouse.dn }}:8123
     database: logs
     table: file_log
     skip_unknown_fields: true

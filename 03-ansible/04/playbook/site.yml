@@ -7,7 +7,12 @@
   tasks:
     - name: Print OS
       ansible.builtin.debug:
-        msg: "{{ ansible_distribution }} {{ ansible_distribution_version }} {{ ansible_architecture }}"
+        msg: |
+          {{ {
+            "OS": "%s %s %s" % (ansible_distribution, ansible_distribution_version, ansible_architecture),
+            "External IP": ansible_host,
+            "DN": dn
+          } }}
 
 - name: Install Clickhouse
   tags:
@@ -105,7 +110,7 @@
         state: touch
         owner: vector
         group: vector
-        mode: '0665'
+        mode: '0664'
     - name: Start Vector
       become: true
       ansible.builtin.service:
