@@ -7,21 +7,14 @@
 ## Конфигурация
 
 
-### Clickhouse
+### ClickHouse
 
-
-Параметры сервера Clickhouse находятся в файле `files/clickhouse/server.yml`.
-
-```yml
-listen_host: 0.0.0.0
-```
-
-* `listen_host: 0.0.0.0` нужен для того, чтобы ClickHouse принимал запросы из внешней среды.
 
 Скрипт создания БД находится в файле `files/clickhouse/db.sql`.
 
 ```sql
-CREATE DATABASE IF NOT EXISTS logs;
+---- Создаётся через role
+-- CREATE DATABASE IF NOT EXISTS logs;
 
 CREATE TABLE IF NOT EXISTS logs.file_log(
     message String

@@ -19,46 +19,36 @@
     - clickhouse
   hosts: clickhouse
 
-  tasks:
+  pre_tasks:
     - name: Install common packages
       become: true
       ansible.builtin.apt:
         update_cache: true
         pkg:
           - gpg
-    - name: Add Clickhouse apt-key
-      become: true
-      ansible.builtin.get_url:
-        url: https://packages.clickhouse.com/rpm/lts/repodata/repomd.xml.key
-        dest: /etc/apt/trusted.gpg.d/clickhouse.asc
-        mode: '0644'
-        force: true
-    - name: Add Clickhouse apt repository
-      become: true
-      ansible.builtin.apt_repository:
-        update_cache: true
-        repo: deb https://packages.clickhouse.com/deb stable main
-        state: present
-        filename: clickhouse
-    - name: Install Clickhouse
-      become: true
-      ansible.builtin.apt:
-        update_cache: true
-        pkg:
-          - clickhouse-server
-          - clickhouse-client
-        state: present
-    - name: Configure Clickhouse
-      become: true
-      ansible.builtin.template:
-        src: files/clickhouse/server.yml
-        dest: /etc/clickhouse-server/config.d/server.yml
-        mode: '0664'
-    - name: Start Clickhouse server
-      become: true
-      ansible.builtin.service:
-        name: clickhouse-server
-        state: restarted
+
+  roles:
+    - role: clickhouse
+      vars:
+        clickhouse_listen_host:
+          - "::"
+        # Uncomment to LightHouse could connect to ClickHouse
+        # clickhouse_networks_default:
+        #   - "::/0"
+        clickhouse_users_custom:
+          - name: vector
+            password: veve
+            networks:
+              - "::/0"
+            profile: default
+            quota: default
+            dbs:
+              - logs
+            comment: User for Vector
+        clickhouse_dbs_custom:
+          - name: logs
+
+  post_tasks:
     - name: Prepare Clickhouse DB script
       become: true
       ansible.builtin.template:

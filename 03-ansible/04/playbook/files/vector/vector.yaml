@@ -30,3 +30,7 @@ sinks:
     database: logs
     table: file_log
     skip_unknown_fields: true
+    auth:
+      strategy: basic
+      user: vector
+      password: veve
