@@ -121,3 +121,49 @@ Tuman$ echo 'SELECT * FROM logs.file_log' | curl --user vector $CLICKHOUSE_IP:81
 Enter host password for user 'vector':
 111
 ```
+
+
+## Vector role
+
+
+> 3. Создайте новый каталог с ролью при помощи `ansible-galaxy role init vector-role`.
+> 4. На основе tasks из старого playbook заполните новую role. Разнесите переменные между `vars` и `default`.
+> 5. Перенести нужные шаблоны конфигов в `templates`.
+
+Создаём заготовку роли:
+
+```shell
+ansible-galaxy role init vector-role
+```
+
+Удаляем всё ненужное, переносим tasks, templates.
+
+Подключаем роль вместо tasks:
+
+```yml
+- name: Install Vector
+  tags:
+    - vector
+  hosts: vector
+
+  roles:
+    - role: vector-role
+```
+
+Проверяем:
+
+```
+Tuman$ ssh -i ../ssh/admin-nopwd debian@89.169.146.244
+...
+
+debian@ntlg-a4-vector:~$ cat /var/vector_output.txt
+debian@ntlg-a4-vector:~$ echo oioioi >> /var/vector_input.txt
+debian@ntlg-a4-vector:~$ cat /var/vector_output.txt
+oioioi
+```
+
+```
+Tuman$ echo 'SELECT * FROM logs.file_log' | curl --user vector $CLICKHOUSE_IP:8123/?query= --data-binary @-
+Enter host password for user 'vector':
+oioioi
+```

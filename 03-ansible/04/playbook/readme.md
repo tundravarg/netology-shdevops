@@ -25,7 +25,13 @@ ORDER BY tuple()
 ```
 
 
-### Clickhouse
+### Vector
+
+
+См. [Role description](roles/vector/README.md).
+
+
+### LightHouse
 
 
 В файле `files/lighthouse/lighthouse.conf` находится конфиг LightHouse для Nginx.
@@ -37,29 +43,6 @@ UI доступен на порту `8123`.
 Это не будет работать, слеш надо удалить.
 
 ![LightHouse UI](files/lighthouse-ui.jpg)
-
-
-### Vector
-
-
-В файле `files/vector/vector.yaml` находится конфигурация ввода-вывода Vector.
-
-В частности его интеграция с Clickhouse:
-
-```yml
-sinks:
-  clickhouse:
-    inputs:
-      - filein
-    type: clickhouse
-    endpoint: http://ntlg-a3-clickhouse:8123
-    database: logs
-    table: file_log
-    skip_unknown_fields: true
-```
-
-В рамках среды учебного стенда Vector читает файл `/var/vector_input.txt`
-и производит вывод в `stdout`, в файл `/var/vector_output.txt` и в Clickhouse, который работает на другом хосте.
 
 
 ## Теги
