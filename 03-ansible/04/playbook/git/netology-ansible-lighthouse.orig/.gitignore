@@ -1,0 +1,22 @@
+tmp/
+
+# Vim
+*.swp
+*~
+\#*\#
+
+# Idea
+.idea
+*.iml
+
+# VSCode
+.vscode/
+.DS_Store
+
+# Eclipse
+.project
+.classpath
+.settings
+
+# Python
+.venv

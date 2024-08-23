@@ -1,3 +1,9 @@
 [submodule "lesson-5/shvirtd-example-python"]
 	path = 01-virtd/04-docker-in-practice/shvirtd-example-python
 	url = https://github.com/tundravarg/netology-shvirtd-example-python.git
+[submodule "03-ansible/04/playbook/git/netology-ansible-vector"]
+	path = 03-ansible/04/playbook/git/netology-ansible-vector
+	url = https://github.com/tundravarg/netology-ansible-vector.git
+[submodule "03-ansible/04/playbook/git/netology-ansible-lighthouse"]
+	path = 03-ansible/04/playbook/git/netology-ansible-lighthouse
+	url = https://github.com/tundravarg/netology-ansible-lighthouse.git

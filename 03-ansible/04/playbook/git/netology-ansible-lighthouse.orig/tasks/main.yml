@@ -1,0 +1,32 @@
+---
+- name: Install Nginx
+  become: true
+  ansible.builtin.apt:
+    update_cache: true
+    pkg:
+      - nginx
+    state: present
+- name: Download LightHouse
+  ansible.builtin.get_url:
+    url: https://github.com/VKCOM/lighthouse/archive/refs/heads/master.zip
+    dest: ./lighthouse.zip
+    mode: '0665'
+- name: Unarchive LightHouse
+  become: true
+  ansible.builtin.unarchive:
+    src: ./lighthouse.zip
+    remote_src: true
+    dest: "/opt"
+- name: Create LightHouse symlink
+  become: true
+  ansible.builtin.file:
+    src: /opt/lighthouse-master
+    dest: /opt/lighthouse
+    state: link
+- name: Setup LightHouse in Nginx
+  become: true
+  ansible.builtin.template:
+    src: templates/lighthouse.conf
+    dest: /etc/nginx/conf.d/lighthouse.conf
+    mode: '0664'
+  notify: Restart Nginx
