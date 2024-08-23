@@ -167,3 +167,35 @@ Tuman$ echo 'SELECT * FROM logs.file_log' | curl --user vector $CLICKHOUSE_IP:81
 Enter host password for user 'vector':
 oioioi
 ```
+
+
+## LightHouse role
+
+
+> 7. Повторите шаги 3–6 для LightHouse. Помните, что одна роль должна настраивать один продукт.
+
+
+Всё тоже самое:
+
+```yml
+- name: Install LightHouse
+  tags:
+    - lighthouse
+  hosts: lighthouse
+
+  roles:
+    - role: lighthouse
+```
+
+Проверяем:
+
+```
+Tuman$ ssh -i ../ssh/admin-nopwd debian@89.169.131.97
+...
+debian@ntlg-a4-vector:~$ cat /var/vector_output.txt
+debian@ntlg-a4-vector:~$ echo nyny-nono >> /var/vector_input.txt
+debian@ntlg-a4-vector:~$ cat /var/vector_output.txt
+nyny-nono
+```
+
+![LightHouse](files/lighthouse.jpg)
