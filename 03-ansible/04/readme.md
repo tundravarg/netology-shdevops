@@ -199,3 +199,60 @@ nyny-nono
 ```
 
 ![LightHouse](files/lighthouse.jpg)
+
+
+## Roles to GitHub
+
+
+> 8. Выложите все roles в репозитории. Проставьте теги, используя семантическую нумерацию. Добавьте roles в `requirements.yml` в playbook.
+> 9. Переработайте playbook на использование roles. Не забудьте про зависимости LightHouse и возможности совмещения `roles` с `tasks`.
+
+* Создаём ропизитории в GitHub, пушим туда роли, пушим теги
+* Обновляем `requirements.yml`
+* Удляем роли из `roles/`
+* Убираем из исключений `.gitignore`
+* Делаем backup в каталоге `git`
+* Добавляем ссылки на GIT-репозитории ролей:
+    * https://github.com/tundravarg/netology-ansible-vector.git
+    * https://github.com/tundravarg/netology-ansible-lighthouse.git
+
+`requirements.yml`:
+
+```yml
+---
+- name: clickhouse
+  src: git@github.com:AlexeySetevoi/ansible-clickhouse.git
+  scm: git
+  version: "1.13"
+- name: vector
+  src: https://github.com/tundravarg/netology-ansible-vector.git
+  scm: git
+  version: "0.0.1"
+- name: lighthouse
+  src: https://github.com/tundravarg/netology-ansible-lighthouse.git
+  scm: git
+  version: "0.0.1"
+```
+
+Тестируем:
+
+```
+rm -r roles
+ansible-galaxy install -r requirements.yml -p roles
+ansible-playbook site.yml -i inventory/prod.yml
+```
+
+```
+Tuman$ ssh -i ../ssh/admin-nopwd debian@89.169.153.207
+...
+debian@ntlg-a4-vector:~$ cat /var/vector_output.txt
+debian@ntlg-a4-vector:~$ echo 'Hello, GIT Roles' >> /var/vector_input.txt
+debian@ntlg-a4-vector:~$ cat /var/vector_output.txt
+Hello, GIT Roles
+```
+
+```
+Tuman$ echo 'SELECT * FROM logs.file_log' | curl --user vector $CLICKHOUSE_IP:8123/?query= --data-binary @-
+Enter host password for user 'vector':
+Hello, GIT Roles
+```
