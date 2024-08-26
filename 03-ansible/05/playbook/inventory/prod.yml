@@ -1,0 +1,18 @@
+---
+grp_clickhouse:
+  hosts:
+    clickhouse:
+      ansible_host: 89.169.129.226
+      dn: "{{project_name}}-clickhouse"
+
+grp_lighthouse:
+  hosts:
+    lighthouse:
+      ansible_host: 89.169.148.104
+      dn: "{{project_name}}-lighthouse"
+
+grp_vector:
+  hosts:
+    vector:
+      ansible_host: 89.169.147.99
+      dn: "{{project_name}}-vector"

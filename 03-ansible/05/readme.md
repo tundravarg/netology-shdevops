@@ -92,3 +92,37 @@ docker.io/aragast/netology:latest
 What's Next?
   View a summary of image vulnerabilities and recommendations → docker scout quickview aragast/netology:latest
 ```
+
+
+В этом задании необходимо модифицировать сделанный и отлаженный ранее playbook.
+Поэтому за основу возьмём (скопируем) terraform и playbook из предыдущего задания.
+
+Не забываем переименовать проект.
+
+terraform/main.tf:
+
+```diff
+-    default = "ntlg-a4"
++    default = "ntlg-a5"
+```
+
+playbook/group_vars/all/vars.yml:
+
+```diff
+-project_name: ntlg-a4
++project_name: ntlg-a5
+```
+
+Создаём ВМ:
+
+```
+terraform apply
+```
+
+Устанавливаем роли из `requirements.yml` и накатываем изменения:
+
+```shell
+ansible-galaxy install -r requirements.yml -p roles
+ansible-playbook site.yml -i inventory/prod.yml -t test
+ansible-playbook site.yml -i inventory/prod.yml
+```
