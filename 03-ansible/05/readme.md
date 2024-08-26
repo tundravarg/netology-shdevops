@@ -126,3 +126,156 @@ ansible-galaxy install -r requirements.yml -p roles
 ansible-playbook site.yml -i inventory/prod.yml -t test
 ansible-playbook site.yml -i inventory/prod.yml
 ```
+
+
+## Molecule ClickHouse
+
+
+> 1. Запустите  `molecule test -s ubuntu_xenial` (или с любым другим сценарием, не имеет значения) внутри корневой директории clickhouse-role, посмотрите на вывод команды. Данная команда может отработать с ошибками или не отработать вовсе, это нормально. Наша цель - посмотреть как другие в реальном мире используют молекулу И из чего может состоять сценарий тестирования.
+
+
+```
+$ molecule test -s ubuntu_xenial
+CRITICAL 'molecule/ubuntu_xenial/molecule.yml' glob failed.  Exiting.
+```
+
+NOTE: Странная проблема... Решается убиранием каталога `roles` из `.gitignore`.
+
+```
+$ molecule test -s ubuntu_xenial
+WARNING  Driver docker does not provide a schema.
+CRITICAL Failed to validate /home/sergey/Documents/Work/Netology/netology-shdevops/03-ansible/05/playbook/roles/clickhouse/molecule/ubuntu_xenial/molecule.yml
+
+["Additional properties are not allowed ('playbooks' was unexpected)"]
+```
+
+Выпиливаем параметр:
+
+```diff
+verifier:
+  name: ansible
+-  playbooks:
+-    verify: ../resources/tests/verify.yml
++  # playbooks:
++  #   verify: ../resources/tests/verify.yml
+```
+
+Что-то заработало:
+
+```
+$ molecule test -s ubuntu_xenial
+WARNING  Driver docker does not provide a schema.
+INFO     ubuntu_xenial scenario test matrix: dependency, cleanup, destroy, syntax, create, prepare, converge, idempotence, side_effect, verify, cleanup, destroy
+INFO     Performing prerun with role_name_check=0...
+INFO     Running ubuntu_xenial > dependency
+WARNING  Skipping, missing the requirements file.
+WARNING  Skipping, missing the requirements file.
+INFO     Running ubuntu_xenial > cleanup
+WARNING  Skipping, cleanup playbook not configured.
+INFO     Running ubuntu_xenial > destroy
+INFO     Sanity checks: 'docker'
+
+PLAY [Destroy] *****************************************************************
+
+TASK [Set async_dir for HOME env] **********************************************
+ok: [localhost]
+
+TASK [Destroy molecule instance(s)] ********************************************
+changed: [localhost] => (item=ubuntu_xenial)
+
+TASK [Wait for instance(s) deletion to complete] *******************************
+FAILED - RETRYING: [localhost]: Wait for instance(s) deletion to complete (300 retries left).
+ok: [localhost] => (item=ubuntu_xenial)
+
+TASK [Delete docker networks(s)] ***********************************************
+skipping: [localhost]
+
+PLAY RECAP *********************************************************************
+localhost                  : ok=3    changed=1    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0
+
+INFO     Running ubuntu_xenial > syntax
+
+playbook: /home/sergey/Documents/Work/Netology/netology-shdevops/03-ansible/05/playbook/roles/clickhouse/molecule/resources/playbooks/converge.yml
+INFO     Running ubuntu_xenial > create
+
+PLAY [Create] ******************************************************************
+
+TASK [Set async_dir for HOME env] **********************************************
+ok: [localhost]
+
+TASK [Log into a Docker registry] **********************************************
+skipping: [localhost] => (item=None)
+skipping: [localhost]
+
+TASK [Check presence of custom Dockerfiles] ************************************
+ok: [localhost] => (item={'capabilities': ['SYS_ADMIN'], 'command': '/sbin/init', 'dockerfile': '../resources/Dockerfile.j2', 'env': {'ANSIBLE_USER': 'ansible', 'DEPLOY_GROUP': 'deployer', 'SUDO_GROUP': 'sudo', 'container': 'docker'}, 'image': 'ubuntu:xenial', 'name': 'ubuntu_xenial', 'privileged': True, 'tmpfs': ['/run', '/tmp'], 'volumes': ['/sys/fs/cgroup:/sys/fs/cgroup']})
+
+TASK [Create Dockerfiles from image names] *************************************
+changed: [localhost] => (item={'capabilities': ['SYS_ADMIN'], 'command': '/sbin/init', 'dockerfile': '../resources/Dockerfile.j2', 'env': {'ANSIBLE_USER': 'ansible', 'DEPLOY_GROUP': 'deployer', 'SUDO_GROUP': 'sudo', 'container': 'docker'}, 'image': 'ubuntu:xenial', 'name': 'ubuntu_xenial', 'privileged': True, 'tmpfs': ['/run', '/tmp'], 'volumes': ['/sys/fs/cgroup:/sys/fs/cgroup']})
+
+TASK [Synchronization the context] *********************************************
+changed: [localhost] => (item={'capabilities': ['SYS_ADMIN'], 'command': '/sbin/init', 'dockerfile': '../resources/Dockerfile.j2', 'env': {'ANSIBLE_USER': 'ansible', 'DEPLOY_GROUP': 'deployer', 'SUDO_GROUP': 'sudo', 'container': 'docker'}, 'image': 'ubuntu:xenial', 'name': 'ubuntu_xenial', 'privileged': True, 'tmpfs': ['/run', '/tmp'], 'volumes': ['/sys/fs/cgroup:/sys/fs/cgroup']})
+
+TASK [Discover local Docker images] ********************************************
+ok: [localhost] => (item=None)
+ok: [localhost]
+
+TASK [Build an Ansible compatible image (new)] *********************************
+ok: [localhost] => (item=molecule_local/ubuntu:xenial)
+
+TASK [Create docker network(s)] ************************************************
+skipping: [localhost]
+
+TASK [Determine the CMD directives] ********************************************
+ok: [localhost] => (item=None)
+ok: [localhost]
+
+TASK [Create molecule instance(s)] *********************************************
+changed: [localhost] => (item=ubuntu_xenial)
+
+TASK [Wait for instance(s) creation to complete] *******************************
+FAILED - RETRYING: [localhost]: Wait for instance(s) creation to complete (300 retries left).
+changed: [localhost] => (item=None)
+changed: [localhost]
+
+PLAY RECAP *********************************************************************
+localhost                  : ok=9    changed=4    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0
+
+INFO     Running ubuntu_xenial > prepare
+WARNING  Skipping, prepare playbook not configured.
+INFO     Running ubuntu_xenial > converge
+
+PLAY [Converge] ****************************************************************
+
+TASK [Gathering Facts] *********************************************************
+fatal: [ubuntu_xenial]: FAILED! => {"ansible_facts": {}, "changed": false, "failed_modules": {"ansible.legacy.setup": {"ansible_facts": {"discovered_interpreter_python": "/usr/bin/python3"}, "failed": true, "msg": "ansible-core requires a minimum of Python2 version 2.7 or Python3 version 3.6. Current version: 3.5.2 (default, Jan 26 2021, 13:30:48) [GCC 5.4.0 20160609]"}}, "msg": "The following modules failed to execute: ansible.legacy.setup\n"}
+
+PLAY RECAP *********************************************************************
+ubuntu_xenial              : ok=0    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0
+
+CRITICAL Ansible return code was 2, command was: ansible-playbook -D --inventory /home/sergey/.cache/molecule/clickhouse/ubuntu_xenial/inventory --skip-tags molecule-notest,notest /home/sergey/Documents/Work/Netology/netology-shdevops/03-ansible/05/playbook/roles/clickhouse/molecule/resources/playbooks/converge.yml
+WARNING  An error occurred during the test sequence action: 'converge'. Cleaning up.
+INFO     Running ubuntu_xenial > cleanup
+WARNING  Skipping, cleanup playbook not configured.
+INFO     Running ubuntu_xenial > destroy
+
+PLAY [Destroy] *****************************************************************
+
+TASK [Set async_dir for HOME env] **********************************************
+ok: [localhost]
+
+TASK [Destroy molecule instance(s)] ********************************************
+changed: [localhost] => (item=ubuntu_xenial)
+
+TASK [Wait for instance(s) deletion to complete] *******************************
+FAILED - RETRYING: [localhost]: Wait for instance(s) deletion to complete (300 retries left).
+changed: [localhost] => (item=ubuntu_xenial)
+
+TASK [Delete docker networks(s)] ***********************************************
+skipping: [localhost]
+
+PLAY RECAP *********************************************************************
+localhost                  : ok=3    changed=2    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0
+
+INFO     Pruning extra files from scenario ephemeral directory
+```
