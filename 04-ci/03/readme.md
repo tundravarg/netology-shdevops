@@ -301,3 +301,40 @@ diff --git a/04-ci/03/example/fail.py b/04-ci/03/example/fail.py
 
 
 ![Nexus - initial](files/sonar-py-1.jpg)
+
+
+## Знакомство с Nexus
+
+
+> 1. В репозиторий `maven-public` загрузите артефакт с GAV-параметрами:
+>  *    groupId: netology;
+>  *    artifactId: java;
+>  *    version: 8_282;
+>  *    classifier: distrib;
+>  *    type: tar.gz.
+> 2. В него же загрузите такой же артефакт, но с version: 8_102.
+> 3. Проверьте, что все файлы загрузились успешно.
+
+
+![Nexus - initial](files/nexus-artefacts.jpg)
+
+
+> 4. В ответе пришлите файл `maven-metadata.xml` для этого артефекта.
+
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata modelVersion="1.1.0">
+  <groupId>netology</groupId>
+  <artifactId>java</artifactId>
+  <versioning>
+    <latest>8_282</latest>
+    <release>8_282</release>
+    <versions>
+      <version>8_102</version>
+      <version>8_282</version>
+    </versions>
+    <lastUpdated>20240905181520</lastUpdated>
+  </versioning>
+</metadata>
+```
