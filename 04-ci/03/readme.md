@@ -131,3 +131,173 @@ index 0984327..0000000
 ![Nexus - initial](files/nexus-0.jpg)
 
 ![Nexus - initial](files/nexus-1.jpg)
+
+
+## Знакомоство с SonarQube
+
+
+> 1. Создайте новый проект, название произвольное.
+> 2. Скачайте пакет sonar-scanner, который вам предлагает скачать SonarQube.
+> 3. Сделайте так, чтобы binary был доступен через вызов в shell (или поменяйте переменную PATH, или любой другой, удобный вам способ).
+> 4. Проверьте `sonar-scanner --version`.
+
+
+```shell
+export PATH="$(pwd)/sonar-scanner-6.1.0.4477-linux-x64/bin:$PATH"
+```
+
+```
+Tuman$ sonar-scanner --version
+20:24:01.100 INFO  Scanner configuration file: $Tuman/netology-shdevops/04-ci/03/tmp/sonar-scanner-6.1.0.4477-linux-x64/conf/sonar-scanner.properties
+20:24:01.102 INFO  Project root configuration file: NONE
+20:24:01.112 INFO  SonarScanner CLI 6.1.0.4477
+20:24:01.113 INFO  Java 17.0.11 Eclipse Adoptium (64-bit)
+20:24:01.114 INFO  Linux 5.15.0-119-generic amd64
+```
+
+
+> 5. Запустите анализатор против кода из директории [example](./example) с дополнительным ключом `-Dsonar.coverage.exclusions=fail.py`.
+
+
+```shell
+sonar-scanner \
+  -Dsonar.projectKey=Netology \
+  -Dsonar.sources=. \
+  -Dsonar.host.url=http://51.250.2.136:9000 \
+  -Dsonar.login=05e6400e0c554c492eb574e2ac58432d1575a9d1 \
+  -Dsonar.coverage.exclusions=fail.py
+```
+
+```
+Tuman$ sonar-scanner \
+  -Dsonar.projectKey=Netology \
+  -Dsonar.sources=. \
+  -Dsonar.host.url=http://51.250.2.136:9000 \
+  -Dsonar.login=05e6400e0c554c492eb574e2ac58432d1575a9d1 \
+  -Dsonar.coverage.exclusions=fail.py
+20:26:12.023 INFO  Scanner configuration file: $Tuman/netology-shdevops/04-ci/03/tmp/sonar-scanner-6.1.0.4477-linux-x64/conf/sonar-scanner.properties
+20:26:12.025 INFO  Project root configuration file: NONE
+20:26:12.035 INFO  SonarScanner CLI 6.1.0.4477
+20:26:12.036 INFO  Java 17.0.11 Eclipse Adoptium (64-bit)
+20:26:12.037 INFO  Linux 5.15.0-119-generic amd64
+20:26:12.057 INFO  User cache: /home/sergey/.sonar/cache
+20:26:15.698 INFO  Communicating with SonarQube Server 9.1.0.47736
+20:26:15.868 INFO  Load global settings
+20:26:15.961 INFO  Load global settings (done) | time=94ms
+20:26:15.963 INFO  Server id: 9CFC3560-AZHDKccYFjJk1KIXWt5c
+20:26:15.964 INFO  User cache: /home/sergey/.sonar/cache
+20:26:15.966 INFO  Load/download plugins
+20:26:15.966 INFO  Load plugins index
+20:26:16.018 INFO  Load plugins index (done) | time=52ms
+20:26:29.382 INFO  Load/download plugins (done) | time=13416ms
+20:26:29.694 INFO  Process project properties
+20:26:29.699 INFO  Process project properties (done) | time=5ms
+20:26:29.700 INFO  Execute project builders
+20:26:29.701 INFO  Execute project builders (done) | time=1ms
+20:26:29.703 INFO  Project key: Netology
+20:26:29.704 INFO  Base dir: /home/sergey/Documents/Work/Netology/netology-shdevops/04-ci/03/example
+20:26:29.704 INFO  Working dir: /home/sergey/Documents/Work/Netology/netology-shdevops/04-ci/03/example/.scannerwork
+20:26:29.774 INFO  Load project settings for component key: 'Netology'
+20:26:29.818 INFO  Load project settings for component key: 'Netology' (done) | time=44ms
+20:26:29.853 INFO  Load quality profiles
+20:26:29.937 INFO  Load quality profiles (done) | time=84ms
+20:26:29.943 INFO  Load active rules
+20:26:32.078 INFO  Load active rules (done) | time=2134ms
+20:26:32.125 INFO  Indexing files...
+20:26:32.125 INFO  Project configuration:
+20:26:32.126 INFO    Excluded sources for coverage: fail.py
+20:26:32.294 INFO  1 file indexed
+20:26:32.294 INFO  0 files ignored because of scm ignore settings
+20:26:32.295 INFO  Quality profile for py: Sonar way
+20:26:32.295 INFO  ------------- Run sensors on module Netology
+20:26:32.350 INFO  Load metrics repository
+20:26:32.382 INFO  Load metrics repository (done) | time=32ms
+20:26:33.055 INFO  Sensor Python Sensor [python]
+20:26:33.059 WARN  Your code is analyzed as compatible with python 2 and 3 by default. This will prevent the detection of issues specific to python 2 or python 3. You can get a more precise analysis by setting a python version in your configuration via the parameter "sonar.python.version"
+20:26:33.063 INFO  Starting global symbols computation
+20:26:33.065 INFO  1 source file to be analyzed
+20:26:33.069 INFO  Load project repositories
+20:26:33.102 INFO  Load project repositories (done) | time=33ms
+20:26:33.304 INFO  1/1 source file has been analyzed
+20:26:33.305 INFO  Starting rules execution
+20:26:33.305 INFO  1 source file to be analyzed
+20:26:33.626 INFO  1/1 source file has been analyzed
+20:26:33.627 INFO  Sensor Python Sensor [python] (done) | time=573ms
+20:26:33.627 INFO  Sensor Cobertura Sensor for Python coverage [python]
+20:26:33.633 INFO  Sensor Cobertura Sensor for Python coverage [python] (done) | time=6ms
+20:26:33.634 INFO  Sensor PythonXUnitSensor [python]
+20:26:33.634 INFO  Sensor PythonXUnitSensor [python] (done) | time=0ms
+20:26:33.634 INFO  Sensor CSS Rules [cssfamily]
+20:26:33.635 INFO  No CSS, PHP, HTML or VueJS files are found in the project. CSS analysis is skipped.
+20:26:33.635 INFO  Sensor CSS Rules [cssfamily] (done) | time=1ms
+20:26:33.635 INFO  Sensor JaCoCo XML Report Importer [jacoco]
+20:26:33.637 INFO  'sonar.coverage.jacoco.xmlReportPaths' is not defined. Using default locations: target/site/jacoco/jacoco.xml,target/site/jacoco-it/jacoco.xml,build/reports/jacoco/test/jacocoTestReport.xml
+20:26:33.638 INFO  No report imported, no coverage information will be imported by JaCoCo XML Report Importer
+20:26:33.638 INFO  Sensor JaCoCo XML Report Importer [jacoco] (done) | time=3ms
+20:26:33.638 INFO  Sensor C# Project Type Information [csharp]
+20:26:33.639 INFO  Sensor C# Project Type Information [csharp] (done) | time=1ms
+20:26:33.639 INFO  Sensor C# Analysis Log [csharp]
+20:26:33.650 INFO  Sensor C# Analysis Log [csharp] (done) | time=11ms
+20:26:33.651 INFO  Sensor C# Properties [csharp]
+20:26:33.651 INFO  Sensor C# Properties [csharp] (done) | time=0ms
+20:26:33.651 INFO  Sensor JavaXmlSensor [java]
+20:26:33.651 INFO  Sensor JavaXmlSensor [java] (done) | time=0ms
+20:26:33.652 INFO  Sensor HTML [web]
+20:26:33.654 INFO  Sensor HTML [web] (done) | time=2ms
+20:26:33.654 INFO  Sensor VB.NET Project Type Information [vbnet]
+20:26:33.654 INFO  Sensor VB.NET Project Type Information [vbnet] (done) | time=0ms
+20:26:33.654 INFO  Sensor VB.NET Analysis Log [vbnet]
+20:26:33.666 INFO  Sensor VB.NET Analysis Log [vbnet] (done) | time=11ms
+20:26:33.666 INFO  Sensor VB.NET Properties [vbnet]
+20:26:33.666 INFO  Sensor VB.NET Properties [vbnet] (done) | time=0ms
+20:26:33.668 INFO  ------------- Run sensors on project
+20:26:33.683 INFO  Sensor Zero Coverage Sensor
+20:26:33.683 INFO  Sensor Zero Coverage Sensor (done) | time=0ms
+20:26:33.685 INFO  SCM Publisher SCM provider for this project is: git
+20:26:33.687 INFO  SCM Publisher 1 source file to be analyzed
+20:26:33.773 INFO  SCM Publisher 1/1 source file have been analyzed (done) | time=86ms
+20:26:33.775 INFO  CPD Executor Calculating CPD for 1 file
+20:26:33.781 INFO  CPD Executor CPD calculation finished (done) | time=6ms
+20:26:33.840 INFO  Analysis report generated in 58ms, dir size=103.2 kB
+20:26:33.848 INFO  Analysis report compressed in 8ms, zip size=14.4 kB
+20:26:33.897 INFO  Analysis report uploaded in 48ms
+20:26:33.898 INFO  ANALYSIS SUCCESSFUL, you can browse http://51.250.2.136:9000/dashboard?id=Netology
+20:26:33.898 INFO  Note that you will be able to access the updated dashboard once the server has processed the submitted analysis report
+20:26:33.898 INFO  More about the report processing at http://51.250.2.136:9000/api/ce/task?id=AZHDOTyWFjJk1KIXWy-j
+20:26:33.902 INFO  Analysis total time: 4.436 s
+20:26:33.903 INFO  EXECUTION SUCCESS
+20:26:33.904 INFO  Total time: 21.882s
+```
+
+
+> 6. Посмотрите результат в интерфейсе.
+
+
+![Nexus - initial](files/sonar-py-0.jpg)
+
+
+> 7. Исправьте ошибки, которые он выявил, включая warnings.
+
+
+```diff
+diff --git a/04-ci/03/example/fail.py b/04-ci/03/example/fail.py
+@@ -1,11 +1,10 @@
+ def increment(index):
+-    index =+ 1
++    index += 1
+     return index
+ def get_square(numb):
+     return numb*numb
+ def print_numb(numb):
+     print("Number is {}".format(numb))
+-    pass
+ 
+ index = 0
+ while (index < 10):
+```
+
+> 8. Запустите анализатор повторно — проверьте, что QG пройдены успешно.
+> 9. Сделайте скриншот успешного прохождения анализа, приложите к решению ДЗ.
+
+
+![Nexus - initial](files/sonar-py-1.jpg)
