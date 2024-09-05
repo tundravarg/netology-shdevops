@@ -338,3 +338,95 @@ diff --git a/04-ci/03/example/fail.py b/04-ci/03/example/fail.py
   </versioning>
 </metadata>
 ```
+
+
+## Знакомство с Maven
+
+
+> 1. Поменяйте в `pom.xml` блок с зависимостями под ваш артефакт из первого пункта задания для Nexus (java с версией 8_282).
+> 2. Запустите команду `mvn package` в директории с `pom.xml`, ожидайте успешного окончания.
+
+
+```
+Tuman$ mvn package
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------< com.netology.app:simple-app >---------------------
+[INFO] Building simple-app 1.0-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+Downloading from my-repo: http://89.169.139.191:8081/repository/maven-public/netology/java/8_282/java-8_282.pom
+Downloading from central: https://repo.maven.apache.org/maven2/netology/java/8_282/java-8_282.pom
+[WARNING] The POM for netology:java:tar.gz:distrib:8_282 is missing, no dependency information available
+Downloading from my-repo: http://89.169.139.191:8081/repository/maven-public/netology/java/8_282/java-8_282-distrib.tar.gz
+Downloaded from my-repo: http://89.169.139.191:8081/repository/maven-public/netology/java/8_282/java-8_282-distrib.tar.gz (520 B at 7.1 kB/s)
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ simple-app ---
+[WARNING] Using platform encoding (UTF-8 actually) to copy filtered resources, i.e. build is platform dependent!
+[INFO] skip non existing resourceDirectory $Tuman/netology-shdevops/04-ci/03/mvn/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ simple-app ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ simple-app ---
+[WARNING] Using platform encoding (UTF-8 actually) to copy filtered resources, i.e. build is platform dependent!
+[INFO] skip non existing resourceDirectory $Tuman/netology-shdevops/04-ci/03/mvn/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ simple-app ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.12.4:test (default-test) @ simple-app ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --- maven-jar-plugin:2.4:jar (default-jar) @ simple-app ---
+[WARNING] JAR will be empty - no content was marked for inclusion!
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.252 s
+[INFO] Finished at: 2024-09-05T21:25:12+03:00
+[INFO] ------------------------------------------------------------------------
+```
+
+
+> 3. Проверьте директорию `~/.m2/repository/`, найдите ваш артефакт.
+
+
+```
+Tuman$ cd ~/.m2
+Tuman$ ls -1 repository/netology/java/8_282/*
+repository/netology/java/8_282/java-8_282-distrib.tar.gz
+repository/netology/java/8_282/java-8_282-distrib.tar.gz.sha1
+repository/netology/java/8_282/java-8_282.pom.lastUpdated
+repository/netology/java/8_282/_remote.repositories
+```
+
+
+> 4. В ответе пришлите исправленный файл `pom.xml`.
+
+
+```xml
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+ 
+  <groupId>com.netology.app</groupId>
+  <artifactId>simple-app</artifactId>
+  <version>1.0-SNAPSHOT</version>
+   <repositories>
+    <repository>
+      <id>my-repo</id>
+      <name>maven-public</name>
+      <url>http://89.169.139.191:8081/repository/maven-public/</url>
+    </repository>
+  </repositories>
+  <dependencies>
+    <dependency>
+      <groupId>netology</groupId>
+      <artifactId>java</artifactId>
+      <version>8_282</version>
+      <classifier>distrib</classifier>
+      <type>tar.gz</type>
+    </dependency>
+  </dependencies>
+</project>
+```
