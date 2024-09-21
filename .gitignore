@@ -17,5 +17,7 @@ tmp/
 .settings
 
 # Python
-
 .venv
+
+# Sonar
+.scannerwork
