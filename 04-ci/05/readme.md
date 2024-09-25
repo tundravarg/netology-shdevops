@@ -77,3 +77,10 @@ https://hub.docker.com/r/jetbrains/teamcity-agent/
 ![Teamcity](files/teamcity-build-master.jpg)
 
 ![Teamcity](files/nexus-build-master.jpg)
+
+
+> 8. Мигрируйте `build configuration` в репозиторий.
+
+
+Мигрировал в формате Kotlin.
+Появился каталог `.teamcity` с настройками проекта.
