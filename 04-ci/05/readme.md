@@ -125,3 +125,11 @@ https://hub.docker.com/r/jetbrains/teamcity-agent/
 ![Teamcity fix deploy](files/teamcity-publish-config.jpg)
 
 ![Teamcity fix deploy](files/teamcity-publish-result.jpg)
+
+
+> 18. Проверьте, что конфигурация в репозитории содержит все настройки конфигурации из teamcity.
+
+
+![Teamcity fix deploy](files/git-tree.jpg)
+
+![Teamcity fix deploy](files/diff.jpg)
