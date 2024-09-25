@@ -99,3 +99,29 @@ https://hub.docker.com/r/jetbrains/teamcity-agent/
 
 **NOTE**: Сборка master красная, т.к. на предыдущем шаге в master заливались конфиги Teamcity,
           что триггернуло сборку и публикацию артефакта в Nexus, где этот артефакт уже есть.
+          Исправлено через публикацию в `maven-snapshots`.
+
+![Teamcity fix deploy](files/teamcity-fix-deploy.jpg)
+
+
+> 14. Внесите изменения из произвольной ветки `feature/add_reply` в `master` через `Merge`.
+
+
+![Teamcity fix deploy](files/teamcity-building-after-merge.jpg)
+
+![Teamcity fix deploy](files/teamcity-building-after-merge-result.jpg)
+
+
+> 15. Убедитесь, что нет собранного артефакта в сборке по ветке `master`.
+
+
+![Teamcity fix deploy](files/teamcity-no-artefacts.jpg)
+
+
+> 16. Настройте конфигурацию так, чтобы она собирала `.jar` в артефакты сборки.
+> 17. Проведите повторную сборку мастера, убедитесь, что сбора прошла успешно и артефакты собраны.
+
+
+![Teamcity fix deploy](files/teamcity-publish-config.jpg)
+
+![Teamcity fix deploy](files/teamcity-publish-result.jpg)
