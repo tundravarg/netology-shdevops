@@ -1,5 +1,7 @@
 # Домашнее задание к занятию 7 «Жизненный цикл ПО»
 
+https://github.com/netology-code/mnt-homeworks/blob/MNT-video/09-ci-01-intro/README.md
+
 ## Подготовка к выполнению
 
 1. Получить бесплатную версию Jira - https://www.atlassian.com/ru/software/jira/work-management/free (скопируйте ссылку в адресную строку). Вы можете воспользоваться любым(в том числе бесплатным vpn сервисом) если сайт у вас недоступен. Кроме того вы можете скачать [docker образ](https://hub.docker.com/r/atlassian/jira-software/#) и запустить на своем хосте self-managed версию jira.
