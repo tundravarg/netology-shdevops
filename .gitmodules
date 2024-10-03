@@ -7,3 +7,6 @@
 [submodule "03-ansible/04/playbook/git/netology-ansible-lighthouse"]
 	path = 03-ansible/04/playbook/git/netology-ansible-lighthouse
 	url = https://github.com/tundravarg/netology-ansible-lighthouse.git
+[submodule "04-ci/05/example-teamcity"]
+	path = 04-ci/05/example-teamcity
+	url = https://github.com/tundravarg/netology-example-teamcity.git
