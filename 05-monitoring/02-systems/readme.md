@@ -96,3 +96,23 @@
         * (+) упрощение репликации данных в разные системы мониторинга или их резервные копии
         * (+) более гибкая настройка отправки пакетов данных с метриками
         * (+) UDP — это менее затратный способ передачи данных, из-за чего может возрасти производительность сбора метрик
+
+
+> 6. Какие из ниже перечисленных систем относятся к push модели, а какие к pull? А может есть гибридные?
+
+
+* Prometheus
+    * pull/(push)
+    * > Prometheus uses a "pull" model when a server gathers information from client machines. But Prometheus Push Gateway may be used in cases when a "push" model is needed.
+* TICK
+    * push
+    * > TICK (namely Telegraf, InfluxDB, Chronograf, Kapacitor) solution of InfluxDB represents the Push pattern.
+* Zabbix
+    * push/pull
+    * > Zabbix by default uses a "pull" model when a server connects to agents on each monitoring machine, and agents periodically gather the information and send it to a server. The alternative is "active checks" mode when agents establish a connection with a server and send data to it when it need.
+* VictoriaMetrics
+    * push/pull
+    * > VictoriaMetrics supports both push and pull models for data collection. 
+* Nagios
+    * pull
+    * > Nagios uses agents that are installed on both the network elements and the components that it monitors; they collect data using pull methodology.
