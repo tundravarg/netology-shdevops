@@ -148,3 +148,22 @@ docker ps -a
 ```
 
 ![Chronograf](files/chronograf-0.jpg)
+
+
+> 8. Перейдите в веб-интерфейс Chronograf (http://localhost:8888) и откройте вкладку Data explorer.
+>         
+>     - Нажмите на кнопку Add a query
+>     - Изучите вывод интерфейса и выберите БД telegraf.autogen
+>     - В `measurments` выберите cpu->host->telegraf-getting-started, а в `fields` выберите usage_system. Внизу появится график утилизации cpu.
+>     - Вверху вы можете увидеть запрос, аналогичный SQL-синтаксису. Поэкспериментируйте с запросом, попробуйте изменить группировку и интервал наблюдений.
+
+
+![Chronograf](files/usage_system.jpg)
+
+```sql
+SELECT mean("usage_system") AS "mean_usage_system" FROM "telegraf"."autogen"."cpu" WHERE time > now() - 2m AND time < now() AND "host"='telegraf-getting-started' GROUP BY time(20s) FILL(null)
+```
+
+![Chronograf](files/change-query.jpg)
+
+Выставил интервал 2 минуты и шруппировку по времени в 20 секунд, что и видим на скриншоте.
