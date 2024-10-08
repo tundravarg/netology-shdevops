@@ -158,12 +158,25 @@ docker ps -a
 >     - Вверху вы можете увидеть запрос, аналогичный SQL-синтаксису. Поэкспериментируйте с запросом, попробуйте изменить группировку и интервал наблюдений.
 
 
-![Chronograf](files/usage_system.jpg)
+![Query](files/usage_system.jpg)
 
 ```sql
 SELECT mean("usage_system") AS "mean_usage_system" FROM "telegraf"."autogen"."cpu" WHERE time > now() - 2m AND time < now() AND "host"='telegraf-getting-started' GROUP BY time(20s) FILL(null)
 ```
 
-![Chronograf](files/change-query.jpg)
+![Modified Query](files/change-query.jpg)
 
 Выставил интервал 2 минуты и шруппировку по времени в 20 секунд, что и видим на скриншоте.
+
+
+> 9. Изучите список [telegraf inputs](https://github.com/influxdata/telegraf/tree/master/plugins/inputs). 
+> Добавьте в конфигурацию telegraf следующий плагин - [docker](https://github.com/influxdata/telegraf/tree/master/plugins/inputs/docker):
+> ```
+> [[inputs.docker]]
+>   endpoint = "unix:///var/run/docker.sock"
+> ```
+
+
+![Docker Measurements](files/docker-measurements.jpg)
+
+На самом деле, в конфиге для Telegraph этот плагин уже подключен и всё необходимое уже было в `docker-compose.yml`.
