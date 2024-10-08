@@ -116,3 +116,35 @@
 * Nagios
     * pull
     * > Nagios uses agents that are installed on both the network elements and the components that it monitors; they collect data using pull methodology.
+
+
+> 7. Склонируйте себе [репозиторий](https://github.com/influxdata/sandbox/tree/master) и запустите TICK-стэк, используя технологии docker и docker-compose.
+> В виде решения на это упражнение приведите скриншот веб-интерфейса ПО chronograf (`http://localhost:8888`).
+
+
+```shell
+git submodule add https://github.com/influxdata/sandbox.git tick
+```
+
+```shell
+./sandbox up
+docker ps -a
+```
+
+После первого запуска не стартуют Kapacitor и Chronograf.
+Чиним так:
+
+```shell
+sudo chmod 777 kapacitor/data
+sudo chmod 666 chronograf/data/chronograf-v1.db
+sudo chmod 777 chronograf/data/backup
+```
+
+И перезапускаем:
+
+```shell
+./sandbox restart
+docker ps -a
+```
+
+![Chronograf](files/chronograf-0.jpg)

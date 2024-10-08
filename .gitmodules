@@ -10,3 +10,6 @@
 [submodule "04-ci/05/example-teamcity"]
 	path = 04-ci/05/example-teamcity
 	url = https://github.com/tundravarg/netology-example-teamcity.git
+[submodule "05-monitoring/02-systems/tick"]
+	path = 05-monitoring/02-systems/tick
+	url = https://github.com/influxdata/sandbox.git
