@@ -86,3 +86,12 @@ node_filesystem_avail_bytes{mountpoint="/", instance="nodeexporter:9100"}
 
 
 ![Dashboard](files/alerting.jpg)
+
+
+## Задание 4
+
+> 1. Сохраните ваш Dashboard.Для этого перейдите в настройки Dashboard, выберите в боковом меню «JSON MODEL». Далее скопируйте отображаемое json-содержимое в отдельный файл и сохраните его.
+> 2. В качестве решения задания приведите листинг этого файла.
+
+
+["My Dashboard" JSON](my-dashboard.json)
