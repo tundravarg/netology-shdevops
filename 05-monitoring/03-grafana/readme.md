@@ -76,3 +76,13 @@ node_filesystem_avail_bytes{mountpoint="/", instance="nodeexporter:9100"}
 
 
 ![Dashboard](files/dashboard.jpg)
+
+
+## Задание 3
+
+
+> 1. Создайте для каждой Dashboard подходящее правило alert — можно обратиться к первой лекции в блоке «Мониторинг».
+> 2. В качестве решения задания приведите скриншот вашей итоговой Dashboard.
+
+
+![Dashboard](files/alerting.jpg)
